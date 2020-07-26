@@ -15,8 +15,20 @@ public class VNS{
 	public static ArrayList<ArrayList<Integer>> pos = new ArrayList<ArrayList<Integer>>();
     //Buffered Reader - read line by line
 public static final int width = 15;
+		
+	//Check that a file path is valid
+        if (args.length == 0){
+            System.out.println("Error: File Path needed as argument");
+            return;
+        }
+        else if(!csv.equals(args[0].substring(args[0].length() - 3))){
+            System.out.println("ERROR: File not in csv format");
+            return;
+        }
+        String filePath = args[0];
+
+        getData(filePath);
     
-    getData();
     initialSolution();
     reuslt();
     
@@ -30,23 +42,6 @@ public static final int width = 15;
     public static String line;
     //Valid file extension
     public static String csv = "csv";
-
-    // MAIN ------------------------------------------------------------------------------------------------------------
-    public static void getData()
-    {
-        //Check that a file path is valid
-        if (args.length == 0){
-            System.out.println("Error: File Path needed as argument");
-            return;
-        }
-        else if(!csv.equals(args[0].substring(args[0].length() - 3))){
-            System.out.println("ERROR: File not in csv format");
-            return;
-        }
-        String filePath = args[0];
-
-        getData(filePath);
-    }
 
     // GETDATA ---------------------------------------------------------------------------------------------------------
     // Reads the data in from the provided csv file
@@ -82,10 +77,7 @@ public static final int width = 15;
             System.out.println("ERROR in GETDATA" + e.getMessage());
         }
         return;
-    }
-	
-	//declares a variable for the width of the sheet
-   
+    }   
 
     public static void initialSolution()
     {
@@ -97,10 +89,10 @@ public static final int width = 15;
         int nextHeight = 0;
 
         //loop through the list of boxes
-        for(int i = 0; i<boxes.size(); i++)
+        for(int i = 0; i<box.size(); i++)
         {
             //get the nextbox in the list
-            ArrayList<Integer> current = boxes.get(i);
+            ArrayList<Integer> current = box.get(i);
             //get its height and width
             nextHeight = current.get(1);
             nextWidth = current.get(0);
