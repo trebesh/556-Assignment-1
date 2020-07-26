@@ -97,10 +97,10 @@ public static final int width = 15;
         int nextHeight = 0;
 
         //loop through the list of boxes
-        for(int i = 0; i<box.size(); i++)
+        for(int i = 0; i<boxes.size(); i++)
         {
             //get the nextbox in the list
-            ArrayList<Integer> current = box.get(i);
+            ArrayList<Integer> current = boxes.get(i);
             //get its height and width
             nextHeight = current.get(1);
             nextWidth = current.get(0);
