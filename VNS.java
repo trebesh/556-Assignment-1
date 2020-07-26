@@ -11,6 +11,8 @@ public class VNS{
     	public static ArrayList<Integer> box;
     //List of the items
     public static ArrayList<ArrayList<Integer>> boxes = new ArrayList<ArrayList<Integer>>();
+	//list of sorted boxes
+	public static ArrayList<ArrayList<Integer>> pos = new ArrayList<ArrayList<Integer>>();
     //Buffered Reader - read line by line
 public static final int width = 15;
     
