@@ -3,6 +3,11 @@
   
   ConnorFergusson_1299038_HannahTrebes_1306378
 */
+package com.company;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
  
 public class VNS{
