@@ -11,33 +11,37 @@ import java.io.IOException;
 import java.util.*;
  
 public class VNS{
+
+public static ArrayList<Integer> box;
+    		//List of the items
+    		public static ArrayList<ArrayList<Integer>> boxes = new ArrayList<ArrayList<Integer>>();
+		//list of sorted boxes, x then y
+		public static ArrayList<ArrayList<Integer>> pos = new ArrayList<ArrayList<Integer>>();
+    		//Buffered Reader - read line by line
+		public static final int width = 15;
 	public static void main(String [] args)
 	{
-    	public static ArrayList<Integer> box;
-    //List of the items
-    public static ArrayList<ArrayList<Integer>> boxes = new ArrayList<ArrayList<Integer>>();
-	//list of sorted boxes
-	public static ArrayList<ArrayList<Integer>> pos = new ArrayList<ArrayList<Integer>>();
-    //Buffered Reader - read line by line
-public static final int width = 15;
+    		
 		
-	//Check that a file path is valid
-        if (args.length == 0){
-            System.out.println("Error: File Path needed as argument");
-            return;
+		//Check that a file path is valid
+		if (args.length == 0){
+		    System.out.println("Error: File Path needed as argument");
+		    return;
         }
+        
         else if(!csv.equals(args[0].substring(args[0].length() - 3))){
             System.out.println("ERROR: File not in csv format");
             return;
         }
+        
         String filePath = args[0];
 
         getData(filePath);
     
-    initialSolution();
-    reuslt();
+    	initialSolution();
+    	result();
     
-  }
+  	}
 	
 	// VARIABLES -------------------------------------------------------------------------------------------------------
     //An item
@@ -97,7 +101,7 @@ public static final int width = 15;
         for(int i = 0; i<box.size(); i++)
         {
             //get the nextbox in the list
-            ArrayList<Integer> current = box.get(i);
+            ArrayList<Integer> current = boxes.get(i);
             //get its height and width
             nextHeight = current.get(1);
             nextWidth = current.get(0);
@@ -145,5 +149,6 @@ public static final int width = 15;
             //writes each box to the console on separate lines
             System.out.println("Box " + Integer.toString(i + 1) + " is at position: " + pos.get(i).get(0) + ", " + pos.get(i).get(1));
         }
+    
     }
 }
