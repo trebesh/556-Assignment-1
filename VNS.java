@@ -16,12 +16,12 @@ public class VNS{
 
     //List of the items
     public static ArrayList<Box> boxes = new ArrayList<>();
+    public static final int scale = 4;
     //Buffered Reader - read line by line
-    public static final int width = 400;
+    public static final int width = 400 * scale;
+    
     public static void main(String [] args)
     {
-
-
         //Check that a file path is valid
         if (args.length == 0){
             System.out.println("Error: File Path needed as argument");
@@ -43,7 +43,14 @@ public class VNS{
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BoxDrawer display = new BoxDrawer();
         f.add(display);
-        f.setSize(400, 400);
+        if(scale != 1)
+        {
+            f.setSize(width, width/(scale/2));
+        }
+        else
+        {
+            f.setSize(width, width);
+        }
         f.setVisible(true);
     }
 
@@ -66,7 +73,7 @@ public class VNS{
                 //Split the line into the list of items
                 String[] stringDim = line.split(",");
 
-                Box b = new Box(Integer.parseInt(stringDim[0]), Integer.parseInt(stringDim[1]));
+                Box b = new Box((Integer.parseInt(stringDim[0])) * scale, (Integer.parseInt(stringDim[1])) * scale);
                 b.minimizeHeight();
                 boxes.add(b);
             }
@@ -132,6 +139,7 @@ public class VNS{
         //display the positions of each box and the total height
         result();
         totalHeight+=nextHighest;
+        totalHeight/=scale;
         System.out.println(totalHeight);
     }
 
@@ -141,8 +149,7 @@ public class VNS{
         int c = 1;
         for (Box b:boxes) {
             //writes each box to the console on separate lines
-            System.out.println("Box " + c + " is at position: " + b.x + ", " + b.y);
-          c++;
+            System.out.println("Box " + c + " is at position: " + (b.x/scale) + ", " + (b.y/scale));
         }
 
     }
@@ -175,7 +182,6 @@ public class VNS{
                         }
                         else
                         {
-                            System.out.println("test");
                             numChanges++;
                         }
                     }
@@ -203,4 +209,3 @@ public class VNS{
         }
     }
 }
-
