@@ -142,6 +142,7 @@ public class VNS{
         for (Box b:boxes) {
             //writes each box to the console on separate lines
             System.out.println("Box " + c + " is at position: " + b.x + ", " + b.y);
+          c++;
         }
 
     }
