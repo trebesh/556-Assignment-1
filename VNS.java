@@ -2,14 +2,10 @@
   Main Class to Implement Variable Neighbourhood Search
   
   ConnorFergusson_1299038_HannahTrebes_1306378
-
-
   neighbourhood function idea:
     take tallest box on second/next row, move down as best improvement
     swap tallest box with shorter box/es of same width
-
 */
-package com.company;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,8 +39,7 @@ public class VNS{
 
         initialSolution();
 
-
-        JFrame f = new JFrame("Object");
+        JFrame f = new JFrame("Boxes");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BoxDrawer display = new BoxDrawer();
         f.add(display);
@@ -133,6 +128,7 @@ public class VNS{
             }
 
         }
+        shuffleDown();
         //display the positions of each box and the total height
         result();
         totalHeight+=nextHighest;
@@ -148,6 +144,47 @@ public class VNS{
             System.out.println("Box " + c + " is at position: " + b.x + ", " + b.y);
         }
 
+    }
+    //shuffles all the boxes down into free space
+    public static void shuffleDown()
+    {
+        int numChanges = 1;
+        //while there was still changes
+        while(numChanges > 0)
+        {
+            numChanges = 0;
+            //go through the list of boxes
+            for(Box b: boxes)
+            {
+                Boolean collision = false;
+                //while there isnt a collision
+                while(collision == false)
+                {
+                    //store the old y coordinate
+                    int tempY = b.getY();
+                    if(tempY-1 >= 0)
+                    {
+                        //reduce the y by one, then test if there are collisions
+                        b.setY(tempY - 1);
+                        //if there  are collisions, change the y back
+                        if(b.checkCollision(boxes))
+                        {
+                            b.setY(tempY);
+                            collision = true;
+                        }
+                        else
+                        {
+                            System.out.println("test");
+                            numChanges++;
+                        }
+                    }
+                    else
+                    {
+                        collision = true;
+                    }
+                }
+            }
+        }
     }
 
     public static class BoxDrawer extends JPanel{
