@@ -42,4 +42,14 @@ public class Box {
         }
         return false;
     }
+
+    public void minimizeHeight(){
+        if (width <= height){ return; }
+        rotate();
+        return;
+    }
+
+    public String toString(){
+        return width + " " + height;
+    }
 }

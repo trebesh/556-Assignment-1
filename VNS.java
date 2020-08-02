@@ -1,5 +1,5 @@
 /*
-  Main Class for calling functions to Implement Variable Neighbourhood Search
+  Main Class to Implement Variable Neighbourhood Search
   
   ConnorFergusson_1299038_HannahTrebes_1306378
 
@@ -18,11 +18,8 @@ import java.util.*;
 
 public class VNS{
 
-    public static ArrayList<Integer> box;
     //List of the items
-    public static ArrayList<ArrayList<Integer>> boxes = new ArrayList<ArrayList<Integer>>();
-    //list of sorted boxes, x then y
-    public static ArrayList<ArrayList<Integer>> pos = new ArrayList<ArrayList<Integer>>();
+    public static ArrayList<Box> boxes = new ArrayList<>();
     //Buffered Reader - read line by line
     public static final int width = 400;
     public static void main(String [] args)
@@ -71,26 +68,16 @@ public class VNS{
             BR = new BufferedReader(new FileReader(filePath));
             //Until the end of the file is reached
             while ((line = BR.readLine()) != null){
-                box = new ArrayList<Integer>();
                 //Split the line into the list of items
                 String[] stringDim = line.split(",");
 
-                //Rotate the box 90 degrees if it's taller than it is wide
-                if(Integer.parseInt(stringDim[0]) < Integer.parseInt(stringDim[1])){
-                    box.add(Integer.parseInt(stringDim[1]));
-                    box.add(Integer.parseInt(stringDim[0]));
-                }
-                else{
-                    box.add(Integer.parseInt(stringDim[0]));
-                    box.add(Integer.parseInt(stringDim[1]));
-                }
-
-                // Add the box to the list of all boxes
-                boxes.add(box);
+                Box b = new Box(Integer.parseInt(stringDim[0]), Integer.parseInt(stringDim[1]));
+                b.minimizeHeight();
+                boxes.add(b);
             }
 //            //Testing message
 //            for(int i = 0; i < boxes.size(); i++){
-//                System.out.println(boxes.get(i).get(0)+ " " + boxes.get(i).get(1));
+//                System.out.println(boxes.get(i).toString());
 //            }
         }catch (IOException e){
             System.out.println("IO ERROR in GETDATA" + e.getMessage());
@@ -113,16 +100,17 @@ public class VNS{
         for(int i = 0; i<boxes.size(); i++)
         {
             //get the nextbox in the list
-            ArrayList<Integer> current = boxes.get(i);
+            Box current = boxes.get(i);
             //get its height and width
-            nextHeight = current.get(1);
-            nextWidth = current.get(0);
+            nextHeight = current.height;
+            nextWidth = current.width;
 
             //if it can fit in the current line
             if((totalWidth + nextWidth) <= width)
             {
                 //add it at this height
-                pos.add(new ArrayList<Integer>(Arrays.asList(totalWidth, totalHeight)));
+                current.x = totalWidth;
+                current.y = totalHeight;
                 //increase the total width for this height
                 totalWidth += nextWidth;
                 //test if this is the tallest block on the row
@@ -138,7 +126,8 @@ public class VNS{
                 //reset the width, and go to height of the tallest box
                 totalWidth = 0;
                 totalHeight+=nextHighest;
-                pos.add(new ArrayList<Integer>(Arrays.asList(totalWidth, totalHeight)));
+                current.x = totalWidth;
+                current.y = totalHeight;
                 totalWidth += nextWidth;
                 nextHighest = nextHeight;
             }
@@ -147,19 +136,16 @@ public class VNS{
         //display the positions of each box and the total height
         result();
         totalHeight+=nextHighest;
-        System.out.println(Integer.toString(totalHeight));
+        System.out.println(totalHeight);
     }
 
     //a method that writes the position of of each box to the console
     public static void result()
     {
-        //stores the size of the position array
-        int size = pos.size();
-        //loops through the position array
-        for(int i = 0; i<size; i++)
-        {
+        int c = 1;
+        for (Box b:boxes) {
             //writes each box to the console on separate lines
-            System.out.println("Box " + Integer.toString(i + 1) + " is at position: " + pos.get(i).get(0) + ", " + pos.get(i).get(1));
+            System.out.println("Box " + c + " is at position: " + b.x + ", " + b.y);
         }
 
     }
@@ -169,13 +155,12 @@ public class VNS{
             super.paintComponent(g);
             this.setBackground(Color.LIGHT_GRAY);
 
-
-            for(int i =0; i<boxes.size();i++)
+            for(int i =0; i< boxes.size(); i++)
             {
                 g.setColor(Color.WHITE);
-                g.fillRect(pos.get(i).get(0), pos.get(i).get(1), boxes.get(i).get(0), boxes.get(i).get(1));
+                g.fillRect(boxes.get(i).x, boxes.get(i).y, boxes.get(i).width, boxes.get(i).height);
                 g.setColor(Color.BLACK);
-                g.drawRect(pos.get(i).get(0), pos.get(i).get(1), boxes.get(i).get(0), boxes.get(i).get(1));
+                g.drawRect(boxes.get(i).x, boxes.get(i).y, boxes.get(i).width, boxes.get(i).height);
             }
         }
     }
