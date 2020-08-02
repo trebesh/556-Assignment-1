@@ -1,5 +1,3 @@
-package com.company;
-
 import java.util.ArrayList;
 
 public class Box {
@@ -32,12 +30,23 @@ public class Box {
     // Returns: TRUE if a collision occurs, otherwise FALSE
     // Checks this box against a list of boxes to see if their x/y/width/height are colliding
     public boolean checkCollision(ArrayList<Box> boxes){
-        for (Box b: boxes) {
-            if(b.x < this.x
-                    && this.x < (b.x + b.width)
-                    && b.y < this.y
-                    && this.y < (b.y + b.height)){
-                return true;
+        for (Box b: boxes) 
+        {
+            if(b != this)
+            {
+                if(this.x < (b.x + b.width))
+                {
+                    if((this.x + this.width) > b.x)
+                    {
+                        if(this.y < (b.y + b.height))
+                        {
+                            if((this.y + this.height) > b.y)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
         }
         return false;
@@ -52,4 +61,14 @@ public class Box {
     public String toString(){
         return width + " " + height;
     }
+
+    public int getY()
+    {
+        return y;
+    }
+
+    public void setY(int tempY) 
+    {
+        y = tempY;
+	}
 }
