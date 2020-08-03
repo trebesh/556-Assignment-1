@@ -16,7 +16,7 @@ public class VNS{
 
     //List of the items
     public static ArrayList<Box> boxes = new ArrayList<>();
-    public static final int scale = 4;
+    public static final int scale = 1;
     //Buffered Reader - read line by line
     public static final int width = 400 * scale;
     
@@ -38,19 +38,22 @@ public class VNS{
         getData(filePath);
 
         initialSolution();
-
+        //for(int i = 0; i<10; i++)
+        //{
+		//tetrisShift();
+		//shuffleDown();
+	//}
+	shuffleDown();
+	result();
+        int totalHeight = getHighest() / scale;
+        
+        System.out.println(totalHeight);
         JFrame f = new JFrame("Boxes");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BoxDrawer display = new BoxDrawer();
         f.add(display);
-        if(scale != 1)
-        {
-            f.setSize(width, width/(scale/2));
-        }
-        else
-        {
-            f.setSize(width, width);
-        }
+        f.setSize(width, width);
+
         f.setVisible(true);
     }
 
@@ -137,10 +140,6 @@ public class VNS{
         }
         shuffleDown();
         //display the positions of each box and the total height
-        result();
-        totalHeight+=nextHighest;
-        totalHeight/=scale;
-        System.out.println(totalHeight);
     }
 
     //a method that writes the position of of each box to the console
@@ -150,6 +149,7 @@ public class VNS{
         for (Box b:boxes) {
             //writes each box to the console on separate lines
             System.out.println("Box " + c + " is at position: " + (b.x/scale) + ", " + (b.y/scale));
+            c++;
         }
 
     }
@@ -189,10 +189,96 @@ public class VNS{
                     {
                         collision = true;
                     }
+                    
                 }
+                shuffleLeft(b);
+                
             }
         }
+
     }
+    
+    public static void shuffleLeft(Box b)
+    {
+    	int numChanges = 1;
+        //while there was still changes
+        while(numChanges > 0)
+        {
+            numChanges = 0;
+                Boolean collision = false;
+                //while there isnt a collision
+                while(collision == false)
+                {
+                    //store the old x coordinate
+                    int tempX = b.x;
+                    if(tempX-1 >= 0)
+                    {
+                        //reduce the y by one, then test if there are collisions
+                        b.x = tempX - 1;
+                        //if there  are collisions, change the y back
+                        if(b.checkCollision(boxes))
+                        {
+                            b.x = tempX;
+                            collision = true;
+                        }
+                        else
+                        {
+                            numChanges++;
+                        }
+                    }
+                    else
+                    {
+                        collision = true;
+                    }
+                }
+        }
+    }
+    //a method that gets a random assortment of boxes and drops them from the top of the stack
+    public static void tetrisShift()
+	{
+		ArrayList<Box> movedBoxes = new ArrayList<>();
+		Random random1 = new Random();
+		int currentHighest = getHighest();
+		int x = 0;
+		int rand1 = random1.nextInt(boxes.size());
+		Box nextBox = boxes.get(rand1);
+		//while we can fit for boxes on the row
+		while((x + nextBox.width) < width)
+		{
+			//set the new y to the highest previous point
+			nextBox.y = currentHighest;
+			//set the new x as far left as possible
+			nextBox.x = x;
+			//get the x value for the next box
+			x += nextBox.width;
+			//remove the box from the original list so it isnt chosen again
+			boxes.remove(nextBox);
+			//add it to a new list so it can be re added later
+			movedBoxes.add(nextBox);
+			//get another random box
+			rand1 = random1.nextInt(boxes.size());
+			nextBox = boxes.get(rand1);
+		}
+		//add the moved boxes back to the original list
+		for(Box b: movedBoxes)
+		{
+			boxes.add(b);
+		}
+		
+	}
+	
+	public static int getHighest()
+	{
+		int currentHighest = 0;
+		for(Box b:boxes)
+		{
+			if(b.y + b.height > currentHighest)
+			{
+				currentHighest = b.y + b.height;
+			}
+		}
+		return currentHighest;
+	}
 
     public static class BoxDrawer extends JPanel{
         public void paintComponent(Graphics g){
