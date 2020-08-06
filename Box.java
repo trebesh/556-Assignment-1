@@ -52,8 +52,35 @@ public class Box {
         return false;
     }
 
+    // CheckCollision -----------------
+    // Arguments: arraylist of boxes
+    // Returns: TRUE if a collision occurs, otherwise FALSE
+    // Checks this box against a list of boxes to see if their x/y/width/height are colliding
+    public Box getCollision(ArrayList<Box> boxes){
+        for (Box b: boxes)
+        {
+            if(b != this)
+            {
+                if(this.x < (b.x + b.width))
+                {
+                    if((this.x + this.width) > b.x)
+                    {
+                        if(this.y < (b.y + b.height))
+                        {
+                            if((this.y + this.height) > b.y)
+                            {
+                                return b;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public void minimizeHeight(){
-        if (width <= height){ return; }
+        if (width >= height){ return; }
         rotate();
         return;
     }
