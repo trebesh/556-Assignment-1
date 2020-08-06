@@ -267,6 +267,36 @@ public class VNS{
 		
 	}
 	
+	public static ArrayList<box> LargeSearch(ArrayList<box> boxesCopy)
+	{
+		ArrayList<Box> globalOptimum = boxesCopy;
+		{
+			for(int i = 0; i< 10000; i++)
+			{
+				currentSolution = tetrisShift();
+				if(accepted(currentSolution, boxesCopy))
+				{
+					boxesCopy = currentSolution();
+				}
+				if(currentSolution.getHighest() < globalOptimum.getHighest())
+				{
+					globalOptimum = currentSolution();
+				}
+				
+			}
+			return globalOptimum
+		}
+	}
+	
+	public static boolean accepted(ArrayList<box> currentSolution, ArrayList<box> boxesCopy)
+	{
+		if(currentSolution.getHighest() < boxesCopy.getHighest())
+		{
+			return true;
+		}
+		return false;
+	}
+	
 	public static int getHighest()
 	{
 		int currentHighest = 0;
