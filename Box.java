@@ -2,10 +2,10 @@ import java.util.ArrayList;
 
 public class Box {
     // Variables ---------------------------------------------------------------------
-    public int width;
-    public int height;
-    public int x;
-    public int y;
+    int width;
+    int height;
+    int x;
+    int y;
 
     // Constructor -------------------------------------------------------------------
     public Box(int w, int h){
@@ -97,5 +97,35 @@ public class Box {
     public void setY(int tempY) 
     {
         y = tempY;
+	}
+
+	public int getX()
+    {
+        return x;
+    }
+
+    public void setX(int tempX) 
+    {
+        x = tempX;
+	}
+
+public int getWidth()
+    {
+        return width;
+    }
+
+    public void setWidth(int tempWidth) 
+    {
+        width = tempWidth;
+	}
+
+public int getHeight()
+    {
+        return height;
+    }
+
+    public void setHeight(int tempHeight) 
+    {
+        height = tempHeight;
 	}
 }
