@@ -15,13 +15,13 @@ import java.util.*;
 public class VNS{
 
     //List of the items
-    public static ArrayList<Box> boxes = new ArrayList<>();
-    public static final int scale = 5;
+    public static final int scale = 1;
     //Buffered Reader - read line by line
-    public static final int width = 40 * scale;
+    public static final int width = 100 * scale;
     
     public static void main(String [] args)
     {
+	ArrayList<Box> boxes = new ArrayList<>();
         //Check that a file path is valid
         if (args.length == 0){
             System.out.println("Error: File Path needed as argument");
@@ -35,20 +35,21 @@ public class VNS{
 
         String filePath = args[0];
 
-        getData(filePath);
+        getData(filePath, boxes);
 
-        initialSolution();
+        initialSolution(boxes);
         boxes = LargeSearch(boxes);
-        shuffleDown();
-        rightDownLeft();
+        shuffleDown(boxes);
+        rightDownLeft(boxes);
 
-        result();
+        result(boxes);
         int totalHeight = getHighest(boxes) / scale;
         
         System.out.println("TotalHeight: " + totalHeight);
         System.out.println("Number of Boxes: " + boxes.size());
         JFrame f = new JFrame("Boxes");
         BoxDrawer display = new BoxDrawer();
+        display.setArray(boxes);
 //        JScrollPane scrollPane = new JScrollPane(display, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 //        JScrollBar bar = scrollPane.getVerticalScrollBar();
 //        f.add(scrollPane, BorderLayout.RIGHT);
@@ -74,7 +75,7 @@ public class VNS{
 
     // GETDATA ---------------------------------------------------------------------------------------------------------
     // Reads the data in from the provided csv file
-    public static void getData(String filePath){
+    public static void getData(String filePath, ArrayList<Box> boxes){
         try{
             BR = new BufferedReader(new FileReader(filePath));
             //Until the end of the file is reached
@@ -99,7 +100,7 @@ public class VNS{
         return;
     }
 
-    public static void initialSolution()
+    public static void initialSolution(ArrayList<Box> boxes)
     {
 
         int totalWidth = 0;
@@ -114,15 +115,15 @@ public class VNS{
             //get the nextbox in the list
             Box current = boxes.get(i);
             //get its height and width
-            nextHeight = current.height;
-            nextWidth = current.width;
+            nextHeight = current.getHeight();
+            nextWidth = current.getWidth();
 
             //if it can fit in the current line
             if((totalWidth + nextWidth) <= width)
             {
                 //add it at this height
-                current.x = totalWidth;
-                current.y = totalHeight;
+                current.setX(totalWidth);
+                current.setY(totalHeight);
                 //increase the total width for this height
                 totalWidth += nextWidth;
                 //test if this is the tallest block on the row
@@ -138,30 +139,30 @@ public class VNS{
                 //reset the width, and go to height of the tallest box
                 totalWidth = 0;
                 totalHeight+=nextHighest;
-                current.x = totalWidth;
-                current.y = totalHeight;
+                current.setX(totalWidth);
+                current.setY(totalHeight);
                 totalWidth += nextWidth;
                 nextHighest = nextHeight;
             }
 
         }
-        shuffleDown();
+        shuffleDown(boxes);
         //display the positions of each box and the total height
     }
 
     //a method that writes the position of of each box to the console
-    public static void result()
+    public static void result(ArrayList<Box> boxes)
     {
         int c = 1;
         for (Box b:boxes) {
             //writes each box to the console on separate lines
-            System.out.println("Box " + c + " is at position: " + (b.x/scale) + ", " + (b.y/scale));
+            System.out.println("Box " + c + " is at position: " + (b.getX()/scale) + ", " + (b.getY()/scale));
             c++;
         }
 
     }
     //shuffles all the boxes down into free space
-    public static void shuffleDown()
+    public static void shuffleDown(ArrayList<Box> boxes)
     {
         int numChanges = 1;
         //while there was still changes
@@ -198,14 +199,14 @@ public class VNS{
                     }
                     
                 }
-                shuffleLeft(b);
+                shuffleLeft(b, boxes);
                 
             }
         }
 
     }
     
-    public static void shuffleLeft(Box b)
+    public static void shuffleLeft(Box b, ArrayList<Box> boxes)
     {
     	int numChanges = 1;
         //while there was still changes
@@ -217,15 +218,15 @@ public class VNS{
                 while(collision == false)
                 {
                     //store the old x coordinate
-                    int tempX = b.x;
+                    int tempX = b.getX();
                     if(tempX-1 >= 0)
                     {
                         //reduce the y by one, then test if there are collisions
-                        b.x = tempX - 1;
+                        b.setX(tempX - 1);
                         //if there  are collisions, change the y back
                         if(b.checkCollision(boxes))
                         {
-                            b.x = tempX;
+                            b.setX(tempX);
                             collision = true;
                         }
                         else
@@ -241,7 +242,7 @@ public class VNS{
         }
     }
 
-    public static void shuffleRight(Box b)
+    public static void shuffleRight(Box b, ArrayList<Box> boxes)
     {
     	int numChanges = 1;
         //while there was still changes
@@ -253,15 +254,15 @@ public class VNS{
                 while(collision == false)
                 {
                     //store the old x coordinate
-                    int tempX = b.x;
-                    if(tempX + b.width + 1 <= width)
+                    int tempX = b.getX();
+                    if(tempX + b.getWidth() + 1 <= width)
                     {
                         //increase the y by one, then test if there are collisions
-                        b.x = tempX + 1;
+                        b.setX(tempX + 1);
                         //if there  are collisions, change the y back
                         if(b.checkCollision(boxes))
                         {
-                            b.x = tempX;
+                            b.setX(tempX);
                             collision = true;
                         }
                         else
@@ -278,7 +279,7 @@ public class VNS{
     }
 
     //a method that gets a random assortment of boxes and drops them from the top of the stack
-    public static ArrayList<Box> tetrisShift()
+    public static ArrayList<Box> tetrisShift(ArrayList<Box> boxes)
 	{
 	    ArrayList<Box> boxesCopy = boxes;
 		ArrayList<Box> movedBoxes = new ArrayList<>();
@@ -288,16 +289,16 @@ public class VNS{
 		int rand1 = random1.nextInt(boxesCopy.size());
 		Box nextBox = boxesCopy.get(rand1);
 		//while we can fit for boxes on the row
-		while((x + nextBox.width) < width)
+		while((x + nextBox.getWidth()) < width)
 		{
 		    //if(rand1 % 2 == 0) nextBox.rotate();
 
             //set the new y to the highest previous point
-			nextBox.y = currentHighest;
+			nextBox.setY(currentHighest);
 			//set the new x as far left as possible
-			nextBox.x = x;
+			nextBox.setX(x);
 			//get the x value for the next box
-			x += nextBox.width;
+			x += nextBox.getWidth();
 			//remove the box from the original list so it isnt chosen again
 			boxesCopy.remove(nextBox);
 			//add it to a new list so it can be re added later
@@ -314,21 +315,21 @@ public class VNS{
 			boxesCopy.add(b);
 		}
 
-		rightDownLeft();
+		rightDownLeft(boxes);
 		return boxesCopy;
 	}
 
-    public static ArrayList<Box> LargeSearch(ArrayList<Box> boxesCopy)
+    public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
     {
         ArrayList<Box> currentSolution = new ArrayList<Box>();
-        ArrayList<Box> globalOptimum = boxesCopy;
+        ArrayList<Box> globalOptimum = boxes;
         {
             for(int i = 0; i< 10000; i++)
             {
-                currentSolution = tetrisShift();
-                if(accepted(currentSolution, boxesCopy))
+                currentSolution = tetrisShift(boxes);
+                if(accepted(currentSolution, boxes))
                 {
-                    boxesCopy = currentSolution;
+                    boxes = currentSolution;
                 }
                 if(getHighest(currentSolution) < getHighest(globalOptimum))
                 {
@@ -340,9 +341,9 @@ public class VNS{
         }
     }
 
-    public static boolean accepted(ArrayList<Box> currentSolution, ArrayList<Box> boxesCopy)
+    public static boolean accepted(ArrayList<Box> currentSolution, ArrayList<Box> boxes)
     {
-        if(getHighest(currentSolution) < getHighest(boxesCopy))
+        if(getHighest(currentSolution) < getHighest(boxes))
         {
             return true;
         }
@@ -350,62 +351,62 @@ public class VNS{
     }
 
 	// Shuffles the top box to the right, down as far as possible and then left as far as possible
-	public static void rightDownLeft(){
+	public static void rightDownLeft(ArrayList<Box> boxes){
         int preHeight = getHighest(boxes) / scale;
         //System.out.println("RDL Pre height: " + preHeight);
         System.out.print(".");
 
         //get the top box
-        Box top = getHighestBox();
-        int oldX = top.x;
-        int oldY = top.y;
+        Box top = getHighestBox(boxes);
+        int oldX = top.getX();
+        int oldY = top.getY();
 
         //move it to the right of the object
-        shuffleRight(top);
+        shuffleRight(top, boxes);
 
         //move it as far down and then left as possible
-        top.x = width - top.width;
+        top.setX(width - top.getWidth());
 
         Box collidingBox = top.getCollision(boxes);
 
         //move it up until there are no collisions
         while(collidingBox != null){
-            top.y += collidingBox.height;
+            top.setY(top.getY() + collidingBox.getHeight());
             collidingBox = top.getCollision(boxes);
         }
 
         //move down and left
-        shuffleDown();
+        shuffleDown(boxes);
 
         //System.out.println("RDL Post height: " + (getHighest(boxes) / scale));
 
-        if (preHeight > (getHighest(boxes) / scale)){ rightDownLeft();}
+        if (preHeight > (getHighest(boxes) / scale)){ rightDownLeft(boxes);}
         else return;
 	}
 
 	
-	public static int getHighest(ArrayList<Box> boxesCopy)
+	public static int getHighest(ArrayList<Box> boxes)
 	{
 		int currentHighest = 0;
 		for(Box b:boxes)
 		{
-			if(b.y + b.height > currentHighest)
+			if(b.getY() + b.getHeight() > currentHighest)
 			{
-				currentHighest = b.y + b.height;
+				currentHighest = b.getY() + b.getHeight();
 			}
 		}
 		return currentHighest;
 	}
 
-    public static Box getHighestBox()
+    public static Box getHighestBox(ArrayList<Box> boxes)
     {
         int currentHighest = 0;
         Box highestBox = boxes.get(0);
         for(Box b:boxes)
         {
-            if(b.y + b.height > currentHighest)
+            if(b.getY() + b.getHeight() > currentHighest)
             {
-                currentHighest = b.y + b.height;
+                currentHighest = b.getY() + b.getHeight();
                 highestBox = b;
             }
         }
@@ -414,6 +415,11 @@ public class VNS{
 
     public static class BoxDrawer extends JPanel{
 
+	ArrayList<Box> boxes;
+	public void setArray(ArrayList<Box> boxesCopy)
+	{
+		boxes = boxesCopy;
+	}
 
 //        @Override
 //        public Dimension getPrefferedSize(){
