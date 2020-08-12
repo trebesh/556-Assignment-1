@@ -433,9 +433,9 @@ public class VNS{
             for(int i =0; i< boxes.size(); i++)
             {
                 g.setColor(Color.WHITE);
-                g.fillRect(boxes.get(i).x, boxes.get(i).y, boxes.get(i).width, boxes.get(i).height);
+                g.fillRect(boxes.get(i).getX(), boxes.get(i).getY(), boxes.get(i).getWidth(), boxes.get(i).getHeight());
                 g.setColor(Color.BLACK);
-                g.drawRect(boxes.get(i).x, boxes.get(i).y, boxes.get(i).width, boxes.get(i).height);
+                g.drawRect(boxes.get(i).getX(), boxes.get(i).getY(), boxes.get(i).getWidth(), boxes.get(i).getHeight());
             }
         }
     }
