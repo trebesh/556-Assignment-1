@@ -38,13 +38,13 @@ public class Box {
                 {
                     if((this.x + this.width) > b.x)
                     {
-                        if(this.y < (b.y + b.height))
-                        {
-                            if((this.y + this.height) > b.y)
+                            if(this.y < (b.y + b.height))
                             {
-                                return true;
+                                if((this.y + this.height) > b.y)
+                                {
+                                    return true;
+                                }
                             }
-                        }
                     }
                 }
             }
