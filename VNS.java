@@ -1,3 +1,4 @@
+package com.company;
 /*
   Main Class to Implement Variable Neighbourhood Search
   
@@ -10,14 +11,15 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class VNS{
 
     //List of the items
-    public static final int scale = 1;
+    public static final int scale = 5;
     //Buffered Reader - read line by line
-    public static final int width = 100 * scale;
+    public static final int width = 40 * scale;
     
     public static void main(String [] args)
     {
@@ -85,7 +87,22 @@ public class VNS{
 
                 Box b = new Box((Integer.parseInt(stringDim[0])) * scale, (Integer.parseInt(stringDim[1])) * scale);
                 b.minimizeHeight();
-                boxes.add(b);        int totalHeight = getHighest(boxes) / scale;
+
+                // Order the boxes by area
+                int area = b.getArea();
+                if (boxes.size() == 0){boxes.add(b);}
+                else{
+                    for (Box inList : boxes) {
+                        if (area >= inList.getArea()) {
+                            boxes.add(boxes.indexOf(inList), b);
+                            break;
+                        }
+                    }
+                }
+
+
+                //boxes.add(b);
+                int totalHeight = getHighest(boxes) / scale;
 
             }
 //            //Testing message
@@ -200,7 +217,6 @@ public class VNS{
                     
                 }
                 shuffleLeft(b, boxes);
-                
             }
         }
 
@@ -278,6 +294,18 @@ public class VNS{
         }
     }
 
+    public static void shuffleBottomUp(ArrayList<Box> boxes){
+        System.out.println("Shuffling bottom-up");
+        for (Box b : boxes) {
+            int oldY = b.y;
+            b.y = 0;
+            while (b.y < oldY){
+                if (b.checkCollision(boxes) == true){b.y += 1;}
+                else break;
+            }
+        }
+    }
+
     //a method that gets a random assortment of boxes and drops them from the top of the stack
     public static ArrayList<Box> tetrisShift(ArrayList<Box> boxes)
 	{
@@ -315,9 +343,45 @@ public class VNS{
 			boxesCopy.add(b);
 		}
 
-		rightDownLeft(boxes);
+		//rightDownLeft(boxes);
+		shuffleBottomUp(boxes);
+        //shuffleDown(boxes);
 		return boxesCopy;
 	}
+
+	// Tries to find gaps in the object and fit items into them
+	public static ArrayList<Box> fillGaps(ArrayList<Box> boxes){
+        //Find gaps
+        // Gaps stored as an item
+        ArrayList<Box> gaps = new ArrayList<Box>();
+        Box gap = new Box(1, 1);
+        gap.x = 0;
+        gap.y = 0;
+
+        for (Box b : boxes) {
+            gap.x = b.x + 1;
+            gap.y = b.y;
+            if (gap.x + gap.width < width){
+                //find the max width
+                while (gap.checkCollision(boxes) == false) {
+                    gap.width++;
+                }
+                gap.width--;
+                //find the max height
+                while (gap.checkCollision(boxes) == false){
+                    gap.height++;
+                }
+                gap.height--;
+                //Add to the list of gaps and reset
+                gaps.add(gap);
+                gap.width = 1;
+                gap.height = 1;
+            }
+        }
+
+
+        return gaps;
+    }
 
     public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
     {
@@ -327,6 +391,16 @@ public class VNS{
             for(int i = 0; i< 10000; i++)
             {
                 currentSolution = tetrisShift(boxes);
+                if(accepted(currentSolution, boxes))
+                {
+                    boxes = currentSolution;
+                }
+                if(getHighest(currentSolution) < getHighest(globalOptimum))
+                {
+                    globalOptimum = currentSolution;
+                }
+
+                currentSolution = rightDownLeft(boxes);
                 if(accepted(currentSolution, boxes))
                 {
                     boxes = currentSolution;
@@ -351,37 +425,40 @@ public class VNS{
     }
 
 	// Shuffles the top box to the right, down as far as possible and then left as far as possible
-	public static void rightDownLeft(ArrayList<Box> boxes){
+	public static ArrayList<Box> rightDownLeft(ArrayList<Box> boxes){
         int preHeight = getHighest(boxes) / scale;
         //System.out.println("RDL Pre height: " + preHeight);
-        System.out.print(".");
+        System.out.println(".");
 
         //get the top box
         Box top = getHighestBox(boxes);
-        int oldX = top.getX();
-        int oldY = top.getY();
+        //System.out.println("Initial highest Box: " + boxes.indexOf(top));
 
         //move it to the right of the object
         shuffleRight(top, boxes);
 
-        //move it as far down and then left as possible
+        //move it to the bottom right corner
         top.setX(width - top.getWidth());
 
+        //Check if it's colliding with another box (expected)
         Box collidingBox = top.getCollision(boxes);
 
-        //move it up until there are no collisions
+        //Move it up until there are no collisions
         while(collidingBox != null){
             top.setY(top.getY() + collidingBox.getHeight());
             collidingBox = top.getCollision(boxes);
         }
 
         //move down and left
+        //shuffleBottomUp(boxes);
         shuffleDown(boxes);
 
         //System.out.println("RDL Post height: " + (getHighest(boxes) / scale));
+        //System.out.println("New highest Box: " + boxes.indexOf(getHighestBox(boxes)));
 
-        if (preHeight > (getHighest(boxes) / scale)){ rightDownLeft(boxes);}
-        else return;
+        //if (preHeight > (getHighest(boxes) / scale)){ rightDownLeft(boxes);}
+        if (top != getHighestBox(boxes)){rightDownLeft(boxes);}
+        return boxes;
 	}
 
 	

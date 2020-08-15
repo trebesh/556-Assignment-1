@@ -1,3 +1,4 @@
+package com.company;
 import java.util.ArrayList;
 
 public class Box {
@@ -6,11 +7,13 @@ public class Box {
     int height;
     int x;
     int y;
+    int area;
 
     // Constructor -------------------------------------------------------------------
     public Box(int w, int h){
         width = w;
         height = h;
+        area = width * height;
     }
 
     // Methods -----------------------------------------------------------------------
@@ -52,30 +55,33 @@ public class Box {
         return false;
     }
 
-    // CheckCollision -----------------
+    // GetCollision -----------------
     // Arguments: arraylist of boxes
-    // Returns: TRUE if a collision occurs, otherwise FALSE
-    // Checks this box against a list of boxes to see if their x/y/width/height are colliding
+    // Returns: The box with which a collision is occuring, null if there is no collision
     public Box getCollision(ArrayList<Box> boxes){
-        for (Box b: boxes)
-        {
-            if(b != this)
+        if (checkCollision(boxes) == false) return null;
+        else{
+            for (Box b: boxes)
             {
-                if(this.x < (b.x + b.width))
+                if(b != this)
                 {
-                    if((this.x + this.width) > b.x)
+                    if(this.x < (b.x + b.width))
                     {
-                        if(this.y < (b.y + b.height))
+                        if((this.x + this.width) > b.x)
                         {
-                            if((this.y + this.height) > b.y)
+                            if(this.y < (b.y + b.height))
                             {
-                                return b;
+                                if((this.y + this.height) > b.y)
+                                {
+                                    return b;
+                                }
                             }
                         }
                     }
                 }
             }
         }
+        // This return should never be reached
         return null;
     }
 
@@ -83,6 +89,10 @@ public class Box {
         if (width >= height){ return; }
         rotate();
         return;
+    }
+
+    public int getArea(){
+       return area;
     }
 
     public String toString(){
@@ -109,7 +119,7 @@ public class Box {
         x = tempX;
 	}
 
-public int getWidth()
+    public int getWidth()
     {
         return width;
     }
@@ -119,7 +129,7 @@ public int getWidth()
         width = tempWidth;
 	}
 
-public int getHeight()
+    public int getHeight()
     {
         return height;
     }
