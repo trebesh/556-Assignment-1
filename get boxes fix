@@ -1,0 +1,20 @@
+if (counter == 0)
+                {
+                    boxes.add(b);
+                }
+                else
+                {
+                    for (int i = 0; i<boxes.size(); i++)
+                    {
+                        if (area >= boxes.get(i).getArea())
+                        {
+                            boxes.add(i, b);
+                            break;
+                        }
+                        else if(i+1 == boxes.size())
+                        {
+                            boxes.add(b);
+                            break;
+                        }
+                    }
+                }
