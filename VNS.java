@@ -1,4 +1,3 @@
-package com.company;
 /*
   Main Class to Implement Variable Neighbourhood Search
   
@@ -39,30 +38,20 @@ public class VNS{
 
         getData(filePath, boxes);
 
-        initialSolution(boxes);
+        newSolution(boxes);
+        //initialSolution(boxes); // from test.java
         boxes = LargeSearch(boxes);
-        shuffleDown(boxes);
-        rightDownLeft(boxes);
+        //shuffleDown(boxes);
+        //rightDownLeft(boxes);
 
         result(boxes);
         int totalHeight = getHighest(boxes) / scale;
         
         System.out.println("TotalHeight: " + totalHeight);
         System.out.println("Number of Boxes: " + boxes.size());
-        JFrame f = new JFrame("Boxes");
-        BoxDrawer display = new BoxDrawer();
-        display.setArray(boxes);
-//        JScrollPane scrollPane = new JScrollPane(display, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//        JScrollBar bar = scrollPane.getVerticalScrollBar();
-//        f.add(scrollPane, BorderLayout.RIGHT);
-//        f.add(bar);
-        f.pack();
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.add(display);
-        f.setSize(width, getHighest(boxes) + 50);
-        //bar.setPreferredSize(new Dimension(10, f.getHeight()));
 
-        f.setVisible(true);
+        drawBoxes(boxes);
+
     }
 
 
@@ -75,11 +64,31 @@ public class VNS{
     //Valid file extension
     public static String csv = "csv";
 
+    public static void  drawBoxes(ArrayList<Box> boxes){
+        JFrame f = new JFrame("Boxes");
+        BoxDrawer display = new BoxDrawer();
+        f.setVisible(true);
+
+        display.setArray(boxes);
+//        JScrollPane scrollPane = new JScrollPane(display, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//        JScrollBar bar = scrollPane.getVerticalScrollBar();
+//        f.add(scrollPane, BorderLayout.RIGHT);
+//        f.add(bar);
+        f.pack();
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.add(display);
+        f.setSize(width, getHighest(boxes) + 50);
+        //bar.setPreferredSize(new Dimension(10, f.getHeight()));
+
+        return;
+    }
+
     // GETDATA ---------------------------------------------------------------------------------------------------------
     // Reads the data in from the provided csv file
     public static void getData(String filePath, ArrayList<Box> boxes){
         try{
             BR = new BufferedReader(new FileReader(filePath));
+            int counter = 0;
             //Until the end of the file is reached
             while ((line = BR.readLine()) != null){
                 //Split the line into the list of items
@@ -90,15 +99,27 @@ public class VNS{
 
                 // Order the boxes by area
                 int area = b.getArea();
-                if (boxes.size() == 0){boxes.add(b);}
-                else{
-                    for (Box inList : boxes) {
-                        if (area >= inList.getArea()) {
-                            boxes.add(boxes.indexOf(inList), b);
+                if (counter == 0)
+                {
+                    boxes.add(b);
+                }
+                else
+                {
+                    for (int i = 0; i<boxes.size(); i++)
+                    {
+                        if (area >= boxes.get(i).getArea())
+                        {
+                            boxes.add(i, b);
+                            break;
+                        }
+                        else if(i+1 == boxes.size())
+                        {
+                            boxes.add(b);
                             break;
                         }
                     }
                 }
+                counter = 1;
 
 
                 //boxes.add(b);
@@ -117,7 +138,7 @@ public class VNS{
         return;
     }
 
-    public static void initialSolution(ArrayList<Box> boxes)
+    public static void newSolution(ArrayList<Box> boxes)
     {
 
         int totalWidth = 0;
@@ -167,6 +188,105 @@ public class VNS{
         //display the positions of each box and the total height
     }
 
+    public static void initialSolution(ArrayList<Box> boxes)
+    {
+        int totalWidth = 0;
+        int totalHeight = 0;
+        int nextWidth = 0;
+        int nextHighest = 0;
+        int nextHeight = 0;
+        ArrayList<Point> spaceArray = new ArrayList<Point>();
+        //loop through the list of boxes
+        for(int i = 0; i<boxes.size(); i++)
+        {
+            //get the nextbox in the list
+            Box current = boxes.get(i);
+            Boolean spaceFound = false;
+            //get its height and width
+            nextHeight = current.getHeight();
+            nextWidth = current.getWidth();
+            for(Point space:spaceArray)
+            {
+                if(current.getWidth() <= space.x)
+                {
+                    current.setX(width - space.x);
+                    current.setY(space.y);
+                    if(!(current.checkCollision(boxes)))
+                    {
+                        spaceFound = true;
+                        space.x = width - (current.getX() + current.getWidth());
+                        break;
+                    }
+                }
+                current.rotate();
+                if(current.getWidth() <= space.x)
+                {
+                    current.setX(width - space.x);
+                    current.setY(space.y);
+                    if(!(current.checkCollision(boxes)))
+                    {
+                        spaceFound = true;
+                        space.x = width - (current.getX() + current.getWidth());
+                        break;
+
+                    }
+                }
+                current.rotate();
+            }
+            if(spaceFound == false)
+            {
+                //if it can fit in the current line
+                if((totalWidth + nextWidth) <= width)
+                {
+                    //add it at this height
+                    current.setX(totalWidth);
+                    current.setY(totalHeight);
+                    //increase the total width for this height
+                    totalWidth += nextWidth;
+                    //test if this is the tallest block on the row
+                    if(nextHeight > nextHighest)
+                    {
+                        //if it is, store the height
+                        nextHighest = nextHeight;
+                    }
+                }
+                //if it cant fit
+                else
+                {
+                    current.rotate();
+                    if((totalWidth + nextWidth) <= width)
+                    {
+                        //add it at this height
+                        current.setX(totalWidth);
+                        current.setY(totalHeight);
+                        //increase the total width for this height
+                        totalWidth += nextWidth;
+                        //test if this is the tallest block on the row
+                        if(nextHeight > nextHighest)
+                        {
+                            //if it is, store the height
+                            nextHighest = nextHeight;
+                        }
+                    }
+                    else
+                    {
+                        Point space = new Point(width - totalWidth, totalHeight);
+                        spaceArray.add(space);
+                        current.rotate();
+                        //reset the width, and go to height of the tallest box
+                        totalWidth = 0;
+                        totalHeight+=nextHighest;
+                        current.setX(totalWidth);
+                        current.setY(totalHeight);
+                        totalWidth += nextWidth;
+                        nextHighest = nextHeight;
+                    }
+                }
+            }
+        }
+        //shuffleDown(boxes);
+    }
+
     //a method that writes the position of of each box to the console
     public static void result(ArrayList<Box> boxes)
     {
@@ -181,6 +301,7 @@ public class VNS{
     //shuffles all the boxes down into free space
     public static void shuffleDown(ArrayList<Box> boxes)
     {
+        System.out.println("S D");
         int numChanges = 1;
         //while there was still changes
         while(numChanges > 0)
@@ -306,6 +427,21 @@ public class VNS{
         }
     }
 
+    public static ArrayList<Box> shift(ArrayList<Box> boxes)
+    {
+        ArrayList<Box> newList = boxes;
+        Random random1 = new Random();
+        for(int i=0; i<3;i++)
+        {
+            int rand1 = random1.nextInt(boxes.size() - 1);
+            Box moveBox = newList.get(rand1);
+            newList.remove(moveBox);
+            newList.add(moveBox);
+        }
+        initialSolution(newList);
+        return newList;
+    }
+
     //a method that gets a random assortment of boxes and drops them from the top of the stack
     public static ArrayList<Box> tetrisShift(ArrayList<Box> boxes)
 	{
@@ -351,36 +487,67 @@ public class VNS{
 
 	// Tries to find gaps in the object and fit items into them
 	public static ArrayList<Box> fillGaps(ArrayList<Box> boxes){
+        System.out.println("Finding Gaps...");
         //Find gaps
         // Gaps stored as an item
         ArrayList<Box> gaps = new ArrayList<Box>();
-        Box gap = new Box(1, 1);
+        Box gap = new Box(1 * scale, 1 * scale);
         gap.x = 0;
         gap.y = 0;
 
         for (Box b : boxes) {
-            gap.x = b.x + 1;
+            gap = new Box(1 * scale, 1 * scale);
+            gap.x = b.x + b.width + 1 * scale;
             gap.y = b.y;
             if (gap.x + gap.width < width){
                 //find the max width
                 while (gap.checkCollision(boxes) == false) {
-                    gap.width++;
+                    gap.width = gap.width  + 1 * scale;
+                    if(gap.x + gap.width >= width * scale) break;
                 }
                 gap.width--;
                 //find the max height
                 while (gap.checkCollision(boxes) == false){
-                    gap.height++;
+                    gap.height = gap.height + 1 * scale;
+                    if(gap.y + gap.height >= getHighest(boxes) * scale) break;
                 }
                 gap.height--;
                 //Add to the list of gaps and reset
-                gaps.add(gap);
-                gap.width = 1;
-                gap.height = 1;
+                if(gap.width != 0 && gap.height != 0 && gap.getArea() >= boxes.get(boxes.size() - 1).area){
+                    gaps.add(gap);
+                }
+                System.out.println(gaps.toString());
+//                System.out.println("smallest box: " + boxes.get(boxes.size() - 1).area);
+//                System.out.println("gap: " + gap.getArea());
             }
         }
 
+        //Put the first box that will fit in each gap
+//        for (Box g : gaps) {
+//
+//        }
+        for (int j = 0; j < gaps.size(); j++){
+            for(int i = 0; i < boxes.size() ; i++){
+//                System.out.println("Fits: " + b.fitsIn(g));
+                if (boxes.get(i).y >= gaps.get(j).y && boxes.get(i).fitsIn(gaps.get(j)) && boxes.get(i).checkCollision(boxes) == false) {
+                    boxes.get(i).x = gaps.get(j).x;
+                    boxes.get(i).y = gaps.get(j).y;
+                    i = boxes.size();
 
-        return gaps;
+                    System.out.println("GAP: " + j);
+                    System.out.println("Box: " + i);
+
+                    gaps.get(j).x = 0;
+                    gaps.get(j).y = 0;
+//                    System.out.println("gap filled");
+                }
+            }
+        }
+
+        //shuffleBottomUp(boxes);
+        shuffleDown(boxes);
+
+        return boxes;
     }
 
     public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
@@ -388,9 +555,19 @@ public class VNS{
         ArrayList<Box> currentSolution = new ArrayList<Box>();
         ArrayList<Box> globalOptimum = boxes;
         {
-            for(int i = 0; i< 10000; i++)
+            for(int i = 0; i< 1000; i++)
             {
-                currentSolution = tetrisShift(boxes);
+//                currentSolution = shift(boxes);
+//                if(accepted(currentSolution, boxes))
+//                {
+//                    boxes = currentSolution;
+//                }
+//                if(getHighest(currentSolution) < getHighest(globalOptimum))
+//                {
+//                    globalOptimum = currentSolution;
+//                }
+
+                currentSolution = fillGaps(boxes);
                 if(accepted(currentSolution, boxes))
                 {
                     boxes = currentSolution;
@@ -400,15 +577,15 @@ public class VNS{
                     globalOptimum = currentSolution;
                 }
 
-                currentSolution = rightDownLeft(boxes);
-                if(accepted(currentSolution, boxes))
-                {
-                    boxes = currentSolution;
-                }
-                if(getHighest(currentSolution) < getHighest(globalOptimum))
-                {
-                    globalOptimum = currentSolution;
-                }
+//                currentSolution = rightDownLeft(boxes);
+//                if(accepted(currentSolution, boxes))
+//                {
+//                    boxes = currentSolution;
+//                }
+//                if(getHighest(currentSolution) < getHighest(globalOptimum))
+//                {
+//                    globalOptimum = currentSolution;
+//                }
 
             }
             return globalOptimum;
@@ -513,7 +690,12 @@ public class VNS{
                 g.fillRect(boxes.get(i).getX(), boxes.get(i).getY(), boxes.get(i).getWidth(), boxes.get(i).getHeight());
                 g.setColor(Color.BLACK);
                 g.drawRect(boxes.get(i).getX(), boxes.get(i).getY(), boxes.get(i).getWidth(), boxes.get(i).getHeight());
+
             }
+        }
+
+        public void draw(ArrayList<Box> boxes){
+
         }
     }
 }

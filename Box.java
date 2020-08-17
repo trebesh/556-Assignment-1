@@ -1,4 +1,3 @@
-package com.company;
 import java.util.ArrayList;
 
 public class Box {
@@ -26,6 +25,22 @@ public class Box {
         height = temp;
 
         return;
+    }
+
+    //FitsIn
+    //Check if one box will fit within another
+    public boolean fitsIn(Box b){
+        //System.out.println("GAP: " + this.width + " " + this.height);
+        //System.out.println("BOX: " + b.width + " " + b.height);
+
+        if(this.width < b.width && this.height < b.height){
+            return true;
+        }
+        this.rotate();
+        if(this.width < b.width && this.height < b.height){
+            return true;
+        }
+        return false;
     }
 
     // CheckCollision -----------------
@@ -92,7 +107,8 @@ public class Box {
     }
 
     public int getArea(){
-       return area;
+        area = width * height;
+        return area;
     }
 
     public String toString(){
