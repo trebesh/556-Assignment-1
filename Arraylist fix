@@ -1,0 +1,8 @@
+ArrayList<Box> shakeBoxes = new ArrayList<Box>();
+        for(Box b:boxes)
+        {
+            Box newbox = new Box(b.getWidth(), b.getHeight());
+            newbox.setX(b.getX());
+            newbox.setY(b.getY());
+            shakeBoxes.add(newbox);
+        }
