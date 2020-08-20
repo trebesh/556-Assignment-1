@@ -18,8 +18,9 @@ public class VNS{
     //List of the items
     public static final int scale = 5;
     //Buffered Reader - read line by line
-    public static final int width = 40 * scale;
-    
+    public static final int width = 100 * scale;
+    public static int initialHeight = 0;
+
     public static void main(String [] args)
     {
 	ArrayList<Box> boxes = new ArrayList<>();
@@ -39,17 +40,19 @@ public class VNS{
         getData(filePath, boxes);
 
         newSolution(boxes);
+        initialHeight = getHighest(boxes);
         //shuffleDown(boxes);
-        findGaps(boxes);
+        //findGaps(boxes);
         //initialSolution(boxes); // from test.java
-        //boxes = LargeSearch(boxes);
+        boxes = LargeSearch(boxes);
         //shuffleDown(boxes);
         //rightDownLeft(boxes);
 
         result(boxes);
         int totalHeight = getHighest(boxes) / scale;
         
-        System.out.println("TotalHeight: " + totalHeight);
+        System.out.println("Initial Height: " + initialHeight / scale);
+        System.out.println("Best Height: " + getHighest(boxes)/scale);
         System.out.println("Number of Boxes: " + boxes.size());
 
         //drawBoxes(boxes);
@@ -123,8 +126,8 @@ public class VNS{
                 }
                 counter = 1;
 
-
                 //boxes.add(b);
+
                 int totalHeight = getHighest(boxes) / scale;
 
             }
@@ -186,7 +189,7 @@ public class VNS{
             }
 
         }
-        //shuffleDown(boxes);
+        shuffleDown(boxes);
         //display the positions of each box and the total height
 
         ArrayList<Box> boxesCopy = new ArrayList<Box>();
@@ -296,7 +299,7 @@ public class VNS{
             }
         }
         //shuffleDown(boxes);
-        drawBoxes(boxes, "Initial Boxes");
+        //drawBoxes(boxes, "Initial Boxes");
 
     }
 
@@ -316,7 +319,7 @@ public class VNS{
     //shuffles all the boxes down into free space
     public static void shuffleDown(ArrayList<Box> boxes)
     {
-        System.out.println("S D");
+        System.out.println("Shuffling Down");
         int numChanges = 1;
         //while there was still changes
         while(numChanges > 0)
@@ -585,59 +588,37 @@ public class VNS{
             }
 
             //Select a rondom box that fits and move it into the gap
-//            int upperRand = fillers.size();
-//            //System.out.println("Filler Size " + fillers.size());
-//            int rnum = 0;
-//            if(upperRand != 0){
-//                int c = 0;
-//                while (c <= upperRand) {
-//                    c++;
-//                    rnum = rand.nextInt(fillers.size());
-//                    //Move the box
-//                    Box oldBox = new Box(boxes.get(rnum).width, boxes.get(rnum).height);
-//                    oldBox.x = boxes.get(rnum).x;
-//                    oldBox.y = boxes.get(rnum).y;
-//                    boxes.remove(rnum);
-//                    boxes.add(rnum, boxesCopy.get(rnum));
-//                    int oldX = boxes.get(rnum).x;
-//                    int oldY = boxes.get(rnum).y;
-//                    boxes.get(rnum).x = g.x;
-//                    boxes.get(rnum).y = g.y;
-//
-//                    //If this causes an invalidation, move it back
-//                    if (boxes.get(rnum).checkCollision(boxes) | boxes.get(rnum).x + boxes.get(rnum).width > width) {
-//                        boxes.remove(rnum);
-//                        boxes.add(rnum, oldBox);
-//                    }
-//                }
-//            }
+            int upperRand = fillers.size();
+            //System.out.println("Filler Size " + fillers.size());
+            int rnum = 0;
+            if(upperRand != 0){
+                int c = 0;
+                while (c <= upperRand * 2) {
+                    c++;
+                    rnum = rand.nextInt(fillers.size());
+                    //Move the box
+                    Box oldBox = new Box(boxes.get(rnum).width, boxes.get(rnum).height);
+                    oldBox.x = boxes.get(rnum).x;
+                    oldBox.y = boxes.get(rnum).y;
+                    boxes.remove(rnum);
+                    boxes.add(rnum, boxesCopy.get(rnum));
+                    int oldX = boxes.get(rnum).x;
+                    int oldY = boxes.get(rnum).y;
+                    boxes.get(rnum).x = g.x;
+                    boxes.get(rnum).y = g.y;
 
-            int c = fillers.size();
-            while (c >= 0) {
-                //Move the box
-                Box oldBox = new Box(boxes.get(c).width, boxes.get(c).height);
-                oldBox.x = boxes.get(c).x;
-                oldBox.y = boxes.get(c).y;
-                boxes.remove(c);
-                boxes.add(c, boxesCopy.get(c));
-                int oldX = boxes.get(c).x;
-                int oldY = boxes.get(c).y;
-                boxes.get(c).x = g.x;
-                boxes.get(c).y = g.y;
-
-                //If this causes an invalidation or height increase, move it back
-                if (boxes.get(c).checkCollision(boxes) | boxes.get(c).x + boxes.get(c).width > width | getHighest(boxes) > previousHeight) {
-                    boxes.remove(c);
-                    boxes.add(c, oldBox);
+                    //If this causes an invalidation, move it back
+                    if (boxes.get(rnum).checkCollision(boxes) || boxes.get(rnum).x + boxes.get(rnum).width > width || previousHeight < getHighest(boxes)) {
+                        boxes.remove(rnum);
+                        boxes.add(rnum, oldBox);
+                    }
                 }
-                c--;
             }
-
         }
 
         shuffleBottomUp(boxes);
         shuffleDown(boxes);
-        drawBoxes(boxes, "Filled");
+        //drawBoxes(boxes, "Filled");
 
         rightDownLeft(boxes);
 
@@ -647,40 +628,27 @@ public class VNS{
     public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
     {
         ArrayList<Box> currentSolution = new ArrayList<Box>();
-        ArrayList<Box> globalOptimum = boxes;
+        ArrayList<Box> shakeBoxes = new ArrayList<Box>();
+        for(Box b:boxes)
         {
-            for(int i = 0; i< 1000; i++)
+            Box newbox = new Box(b.getWidth(), b.getHeight());
+            newbox.setX(b.getX());
+            newbox.setY(b.getY());
+            shakeBoxes.add(newbox);
+        }
+        ArrayList<Box> globalOptimum = shakeBoxes;
+        {
+            for(int i = 0; i< 5000; i++)
             {
-//                currentSolution = shift(boxes);
-//                if(accepted(currentSolution, boxes))
-//                {
-//                    boxes = currentSolution;
-//                }
-//                if(getHighest(currentSolution) < getHighest(globalOptimum))
-//                {
-//                    globalOptimum = currentSolution;
-//                }
-
                 currentSolution = findGaps(boxes);
                 if(accepted(currentSolution, boxes))
                 {
                     boxes = currentSolution;
                 }
-                if(getHighest(currentSolution) < getHighest(globalOptimum))
-                {
+                if(getHighest(currentSolution) < getHighest(globalOptimum)) {
                     globalOptimum = currentSolution;
+                    System.out.println("New Best: " + getHighest(globalOptimum));
                 }
-
-//                currentSolution = rightDownLeft(boxes);
-//                if(accepted(currentSolution, boxes))
-//                {
-//                    boxes = currentSolution;
-//                }
-//                if(getHighest(currentSolution) < getHighest(globalOptimum))
-//                {
-//                    globalOptimum = currentSolution;
-//                }
-
             }
             return globalOptimum;
         }
@@ -699,7 +667,7 @@ public class VNS{
 	public static ArrayList<Box> rightDownLeft(ArrayList<Box> boxes){
         int preHeight = getHighest(boxes) / scale;
         //System.out.println("RDL Pre height: " + preHeight);
-        System.out.println(".");
+        System.out.println("Right Down Left");
 
         //get the top box
         Box top = getHighestBox(boxes);
@@ -780,6 +748,11 @@ public class VNS{
         public void paintComponent(Graphics g){
             super.paintComponent(g);
             this.setBackground(Color.LIGHT_GRAY);
+
+            g.setColor(Color.RED);
+            g.fillRect(width, 0, 1, getHighest(boxes));
+            g.fillRect(0, getHighest(boxes), width, 1);
+
 
             for(int i =0; i< boxes.size(); i++)
             {
