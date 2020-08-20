@@ -28,16 +28,16 @@ public class Box {
     }
 
     //FitsIn
-    //Check if one box will fit within another
-    public boolean fitsIn(Box b){
-        //System.out.println("GAP: " + this.width + " " + this.height);
-        //System.out.println("BOX: " + b.width + " " + b.height);
+    //Check if one box will fit within the given box
+    public boolean fitsIn(Box g){
+        //System.out.println("GAP: " + g.width + " " + g.height);
+        //System.out.println("BOX: "+ this.width + " " + this.height);
 
-        if(this.width < b.width && this.height < b.height){
+        if(this.width < g.width && this.height < g.height){
             return true;
         }
         this.rotate();
-        if(this.width < b.width && this.height < b.height){
+        if(this.width < g.width && this.height < g.height){
             return true;
         }
         return false;
