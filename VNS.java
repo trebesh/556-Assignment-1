@@ -1,6 +1,6 @@
 /*
   Main Class to Implement Variable Neighbourhood Search
-  
+
   ConnorFergusson_1299038_HannahTrebes_1306378
   neighbourhood function idea:
     take tallest box on second/next row, move down as best improvement
@@ -19,11 +19,11 @@ public class VNS{
     public static final int scale = 5;
     //Buffered Reader - read line by line
     public static final int width = 100 * scale;
-    public static int initialHeight = 0;
-
+    public static final int kmax = 3;
+    public static final int tmax = 100;
     public static void main(String [] args)
     {
-	ArrayList<Box> boxes = new ArrayList<>();
+        ArrayList<Box> boxes = new ArrayList<>();
         //Check that a file path is valid
         if (args.length == 0){
             System.out.println("Error: File Path needed as argument");
@@ -40,19 +40,12 @@ public class VNS{
         getData(filePath, boxes);
 
         newSolution(boxes);
-        initialHeight = getHighest(boxes);
-        //shuffleDown(boxes);
-        //findGaps(boxes);
-        //initialSolution(boxes); // from test.java
-        boxes = LargeSearch(boxes);
-        //shuffleDown(boxes);
-        //rightDownLeft(boxes);
+        boxes = BVNS(boxes);
 
         result(boxes);
         int totalHeight = getHighest(boxes) / scale;
-        
-        System.out.println("Initial Height: " + initialHeight / scale);
-        System.out.println("Best Height: " + getHighest(boxes)/scale);
+
+        System.out.println("TotalHeight: " + totalHeight);
         System.out.println("Number of Boxes: " + boxes.size());
 
         //drawBoxes(boxes);
@@ -126,8 +119,8 @@ public class VNS{
                 }
                 counter = 1;
 
-                //boxes.add(b);
 
+                //boxes.add(b);
                 int totalHeight = getHighest(boxes) / scale;
 
             }
@@ -189,7 +182,7 @@ public class VNS{
             }
 
         }
-        shuffleDown(boxes);
+        //shuffleDown(boxes);
         //display the positions of each box and the total height
 
         ArrayList<Box> boxesCopy = new ArrayList<Box>();
@@ -198,109 +191,7 @@ public class VNS{
             boxesCopy.get(boxesCopy.size() - 1).x = b.x;
             boxesCopy.get(boxesCopy.size() - 1).y = b.y;
         }
-
-        drawBoxes(boxesCopy, "New Boxes");
-    }
-
-    public static void initialSolution(ArrayList<Box> boxes)
-    {
-        int totalWidth = 0;
-        int totalHeight = 0;
-        int nextWidth = 0;
-        int nextHighest = 0;
-        int nextHeight = 0;
-        ArrayList<Point> spaceArray = new ArrayList<Point>();
-        //loop through the list of boxes
-        for(int i = 0; i<boxes.size(); i++)
-        {
-            //get the nextbox in the list
-            Box current = boxes.get(i);
-            Boolean spaceFound = false;
-            //get its height and width
-            nextHeight = current.getHeight();
-            nextWidth = current.getWidth();
-            for(Point space:spaceArray)
-            {
-                if(current.getWidth() <= space.x)
-                {
-                    current.setX(width - space.x);
-                    current.setY(space.y);
-                    if(!(current.checkCollision(boxes)))
-                    {
-                        spaceFound = true;
-                        space.x = width - (current.getX() + current.getWidth());
-                        break;
-                    }
-                }
-                current.rotate();
-                if(current.getWidth() <= space.x)
-                {
-                    current.setX(width - space.x);
-                    current.setY(space.y);
-                    if(!(current.checkCollision(boxes)))
-                    {
-                        spaceFound = true;
-                        space.x = width - (current.getX() + current.getWidth());
-                        break;
-
-                    }
-                }
-                current.rotate();
-            }
-            if(spaceFound == false)
-            {
-                //if it can fit in the current line
-                if((totalWidth + nextWidth) <= width)
-                {
-                    //add it at this height
-                    current.setX(totalWidth);
-                    current.setY(totalHeight);
-                    //increase the total width for this height
-                    totalWidth += nextWidth;
-                    //test if this is the tallest block on the row
-                    if(nextHeight > nextHighest)
-                    {
-                        //if it is, store the height
-                        nextHighest = nextHeight;
-                    }
-                }
-                //if it cant fit
-                else
-                {
-                    current.rotate();
-                    if((totalWidth + nextWidth) <= width)
-                    {
-                        //add it at this height
-                        current.setX(totalWidth);
-                        current.setY(totalHeight);
-                        //increase the total width for this height
-                        totalWidth += nextWidth;
-                        //test if this is the tallest block on the row
-                        if(nextHeight > nextHighest)
-                        {
-                            //if it is, store the height
-                            nextHighest = nextHeight;
-                        }
-                    }
-                    else
-                    {
-                        Point space = new Point(width - totalWidth, totalHeight);
-                        spaceArray.add(space);
-                        current.rotate();
-                        //reset the width, and go to height of the tallest box
-                        totalWidth = 0;
-                        totalHeight+=nextHighest;
-                        current.setX(totalWidth);
-                        current.setY(totalHeight);
-                        totalWidth += nextWidth;
-                        nextHighest = nextHeight;
-                    }
-                }
-            }
-        }
-        //shuffleDown(boxes);
-        //drawBoxes(boxes, "Initial Boxes");
-
+        findGaps(boxes);
     }
 
     //a method that writes the position of of each box to the console
@@ -319,7 +210,6 @@ public class VNS{
     //shuffles all the boxes down into free space
     public static void shuffleDown(ArrayList<Box> boxes)
     {
-        System.out.println("Shuffling Down");
         int numChanges = 1;
         //while there was still changes
         while(numChanges > 0)
@@ -353,7 +243,7 @@ public class VNS{
                     {
                         collision = true;
                     }
-                    
+
                 }
                 shuffleLeft(b, boxes);
             }
@@ -362,81 +252,80 @@ public class VNS{
         //drawBoxes(boxes, "S D");
 
     }
-    
+
     public static void shuffleLeft(Box b, ArrayList<Box> boxes)
     {
-    	int numChanges = 1;
+        int numChanges = 1;
         //while there was still changes
         while(numChanges > 0)
         {
             numChanges = 0;
-                Boolean collision = false;
-                //while there isnt a collision
-                while(collision == false)
+            Boolean collision = false;
+            //while there isnt a collision
+            while(collision == false)
+            {
+                //store the old x coordinate
+                int tempX = b.getX();
+                if(tempX-1 >= 0)
                 {
-                    //store the old x coordinate
-                    int tempX = b.getX();
-                    if(tempX-1 >= 0)
+                    //reduce the y by one, then test if there are collisions
+                    b.setX(tempX - 1);
+                    //if there  are collisions, change the y back
+                    if(b.checkCollision(boxes))
                     {
-                        //reduce the y by one, then test if there are collisions
-                        b.setX(tempX - 1);
-                        //if there  are collisions, change the y back
-                        if(b.checkCollision(boxes))
-                        {
-                            b.setX(tempX);
-                            collision = true;
-                        }
-                        else
-                        {
-                            numChanges++;
-                        }
+                        b.setX(tempX);
+                        collision = true;
                     }
                     else
                     {
-                        collision = true;
+                        numChanges++;
                     }
                 }
+                else
+                {
+                    collision = true;
+                }
+            }
         }
     }
 
     public static void shuffleRight(Box b, ArrayList<Box> boxes)
     {
-    	int numChanges = 1;
+        int numChanges = 1;
         //while there was still changes
         while(numChanges > 0)
         {
             numChanges = 0;
-                Boolean collision = false;
-                //while there isnt a collision
-                while(collision == false)
+            Boolean collision = false;
+            //while there isnt a collision
+            while(collision == false)
+            {
+                //store the old x coordinate
+                int tempX = b.getX();
+                if(tempX + b.getWidth() + 1 <= width)
                 {
-                    //store the old x coordinate
-                    int tempX = b.getX();
-                    if(tempX + b.getWidth() + 1 <= width)
+                    //increase the y by one, then test if there are collisions
+                    b.setX(tempX + 1);
+                    //if there  are collisions, change the y back
+                    if(b.checkCollision(boxes))
                     {
-                        //increase the y by one, then test if there are collisions
-                        b.setX(tempX + 1);
-                        //if there  are collisions, change the y back
-                        if(b.checkCollision(boxes))
-                        {
-                            b.setX(tempX);
-                            collision = true;
-                        }
-                        else
-                        {
-                            numChanges++;
-                        }
+                        b.setX(tempX);
+                        collision = true;
                     }
                     else
                     {
-                        collision = true;
+                        numChanges++;
                     }
                 }
+                else
+                {
+                    collision = true;
+                }
+            }
         }
     }
 
     public static void shuffleBottomUp(ArrayList<Box> boxes){
-        System.out.println("Shuffling bottom-up");
         for (Box b : boxes) {
             int oldY = b.y;
             b.y = 0;
@@ -447,67 +336,134 @@ public class VNS{
         }
     }
 
-    public static ArrayList<Box> shift(ArrayList<Box> boxes)
+    public static ArrayList<Box> BVNS(ArrayList<Box> boxes)
     {
-        ArrayList<Box> newList = boxes;
-        Random random1 = new Random();
-        for(int i=0; i<3;i++)
-        {
-            int rand1 = random1.nextInt(boxes.size() - 1);
-            Box moveBox = newList.get(rand1);
-            newList.remove(moveBox);
-            newList.add(moveBox);
+        int timer = 1;
+        while(timer < tmax) {
+            System.out.print(".");
+            ArrayList<Box> shookBoxes = new ArrayList<Box>();
+            ArrayList<Box> bestSolution = new ArrayList<Box>();
+            int k = 1;
+            for (int i = k; i <= kmax; i++) {
+                shookBoxes = shake(boxes, i);
+                shookBoxes = localSearch(shookBoxes);
+                if (bestSolution.size() <= 0 || getHighest(bestSolution) > getHighest(shookBoxes)) {
+                    bestSolution = shookBoxes;
+                }
+            }
+
+            if (getHighest(boxes) > getHighest(bestSolution)) {
+                boxes = new ArrayList<Box>();
+                for (Box b : bestSolution) {
+                    Box newbox = new Box(b.getWidth(), b.getHeight());
+                    newbox.setX(b.getX());
+                    newbox.setY(b.getY());
+                    boxes.add(newbox);
+                }
+                System.out.println("boxes height end = " + getHighest(boxes) / scale);
+            }
+            timer++;
         }
-        initialSolution(newList);
-        return newList;
+        return boxes;
     }
 
-    //a method that gets a random assortment of boxes and drops them from the top of the stack
-    public static ArrayList<Box> tetrisShift(ArrayList<Box> boxes)
-	{
-	    ArrayList<Box> boxesCopy = boxes;
-		ArrayList<Box> movedBoxes = new ArrayList<>();
-		Random random1 = new Random();
-		int currentHighest = getHighest(boxesCopy);
-		int x = 0;
-		int rand1 = random1.nextInt(boxesCopy.size());
-		Box nextBox = boxesCopy.get(rand1);
-		//while we can fit for boxes on the row
-		while((x + nextBox.getWidth()) < width)
-		{
-		    //if(rand1 % 2 == 0) nextBox.rotate();
-
-            //set the new y to the highest previous point
-			nextBox.setY(currentHighest);
-			//set the new x as far left as possible
-			nextBox.setX(x);
-			//get the x value for the next box
-			x += nextBox.getWidth();
-			//remove the box from the original list so it isnt chosen again
-			boxesCopy.remove(nextBox);
-			//add it to a new list so it can be re added later
-			movedBoxes.add(nextBox);
-			//get another random box
-			rand1 = random1.nextInt(boxes.size());
-			nextBox = boxes.get(rand1);
-
+    public static ArrayList<Box> shake(ArrayList<Box> boxes, int k)
+    {
+        ArrayList<Box> shakeBoxes = new ArrayList<Box>();
+        for(Box b:boxes)
+        {
+            Box newbox = new Box(b.getWidth(), b.getHeight());
+            newbox.setX(b.getX());
+            newbox.setY(b.getY());
+            shakeBoxes.add(newbox);
+        }
+        Random random1 = new Random();
+        if(k == 1)
+        {
+            int rand1 = random1.nextInt(shakeBoxes.size() - 1);
+            Box moveBox = shakeBoxes.get(rand1);
+            shakeBoxes.remove(moveBox);
+            shakeBoxes.add(moveBox);
+        }
+        else if(k==2)
+        {
+            Random random2 = new Random();
+            int rand1 = random1.nextInt(shakeBoxes.size() - 1);
+            Box moveBox = shakeBoxes.get(rand1);
+            moveBox.rotate();
+            shakeBoxes.remove(moveBox);
+            shakeBoxes.add(moveBox);
+        }
+        else {
+            int rand1 = random1.nextInt(shakeBoxes.size() - 1);
+            Box rotateBox = shakeBoxes.get(rand1);
+            rotateBox.rotate();
 
         }
-		//add the moved boxes back to the original list
-		for(Box b: movedBoxes)
-		{
-			boxesCopy.add(b);
-		}
+        newSolution(shakeBoxes);
+        return shakeBoxes;
+    }
 
-		//rightDownLeft(boxes);
-		shuffleBottomUp(boxes);
-        //shuffleDown(boxes);
-		return boxesCopy;
-	}
 
-	// Tries to find gaps in the object and fit items into them
-	public static ArrayList<Box> findGaps(ArrayList<Box> boxes){
-        System.out.println("Finding Gaps...");
+    public static ArrayList<Box> localSearch(ArrayList<Box> boxes)
+    {
+        ArrayList<Box> currentBest = new ArrayList<Box>();
+        ArrayList<Box> localSearch = new ArrayList<Box>();
+        for(Box b:boxes)
+        {
+            Box newbox = new Box(b.getWidth(), b.getHeight());
+            newbox.setX(b.getX());
+            newbox.setY(b.getY());
+            currentBest.add(newbox);
+        }
+        for(int i = 0; i<100; i++)
+        {
+            localSearch = new ArrayList<Box>();
+            for(Box b:boxes)
+            {
+                Box newbox = new Box(b.getWidth(), b.getHeight());
+                newbox.setX(b.getX());
+                newbox.setY(b.getY());
+                localSearch.add(newbox);
+            }
+            Random random1 = new Random();
+            int k = random1.nextInt(3);
+            if (k == 1) {
+                int rand1 = random1.nextInt(localSearch.size() - 1);
+                Box moveBox = localSearch.get(rand1);
+                localSearch.remove(moveBox);
+                localSearch.add(moveBox);
+            } else if (k == 2) {
+                Random random2 = new Random();
+                int rand1 = random1.nextInt(localSearch.size() - 1);
+                Box moveBox = localSearch.get(rand1);
+                moveBox.rotate();
+                localSearch.remove(moveBox);
+                localSearch.add(moveBox);
+            } else {
+                int rand1 = random1.nextInt(localSearch.size() - 1);
+                Box rotateBox = localSearch.get(rand1);
+                rotateBox.rotate();
+
+            }
+            newSolution(localSearch);
+            if(getHighest(localSearch) < getHighest(currentBest))
+            {
+                currentBest = new ArrayList<Box>();
+                for(Box b:localSearch)
+                {
+                    Box newbox = new Box(b.getWidth(), b.getHeight());
+                    newbox.setX(b.getX());
+                    newbox.setY(b.getY());
+                    currentBest.add(newbox);
+                }
+            }
+        }
+        return currentBest;
+    }
+
+    // Tries to find gaps in the object and fit items into them
+    public static ArrayList<Box> findGaps(ArrayList<Box> boxes){
         //Find gaps
         // Gaps stored as an item
         ArrayList<Box> gaps = new ArrayList<Box>();
@@ -544,9 +500,6 @@ public class VNS{
                 if(gap.width != 0 && gap.height != 0 && gap.getArea() >= boxes.get(boxes.size() - 1).area){
                     gaps.add(gap);
                 }
-                //System.out.println(gaps.toString());
-//                System.out.println("smallest box: " + boxes.get(boxes.size() - 1).area);
-//                System.out.println("gap: " + gap.getArea());
             }
         }
 
@@ -558,7 +511,6 @@ public class VNS{
     }
 
     public static ArrayList<Box> fillGaps(ArrayList<Box> boxes, ArrayList<Box> gaps){
-        System.out.println("Filling gaps...");
         Random rand = new Random();
         int previousHeight = getHighest(boxes);
 
@@ -579,46 +531,35 @@ public class VNS{
 
             for (Box b : boxesCopy) {
                 if (b.fitsIn(g)) {
-                    //System.out.println("^ Fits");
-//                    fillers.add(new Box(b.width, b.height));
-//                    fillers.get(fillers.size() - 1).x = g.x;
-//                    fillers.get(fillers.size() - 1).y = g.y;
                     fillers.add(boxesCopy.indexOf(b));
                 }
             }
 
-            //Select a rondom box that fits and move it into the gap
-            int upperRand = fillers.size();
-            //System.out.println("Filler Size " + fillers.size());
-            int rnum = 0;
-            if(upperRand != 0){
-                int c = 0;
-                while (c <= upperRand * 2) {
-                    c++;
-                    rnum = rand.nextInt(fillers.size());
-                    //Move the box
-                    Box oldBox = new Box(boxes.get(rnum).width, boxes.get(rnum).height);
-                    oldBox.x = boxes.get(rnum).x;
-                    oldBox.y = boxes.get(rnum).y;
-                    boxes.remove(rnum);
-                    boxes.add(rnum, boxesCopy.get(rnum));
-                    int oldX = boxes.get(rnum).x;
-                    int oldY = boxes.get(rnum).y;
-                    boxes.get(rnum).x = g.x;
-                    boxes.get(rnum).y = g.y;
+            int c = fillers.size();
+            while (c > 0) {
+                //Move the box
+                Box oldBox = new Box(boxes.get(c-1).width, boxes.get(c-1).height);
+                oldBox.x = boxes.get(c-1).x;
+                oldBox.y = boxes.get(c-1).y;
+                boxes.remove(c-1);
+                boxes.add(c-1, boxesCopy.get(c-1));
+                int oldX = boxes.get(c-1).x;
+                int oldY = boxes.get(c-1).y;
+                boxes.get(c-1).x = g.x;
+                boxes.get(c-1).y = g.y;
 
-                    //If this causes an invalidation, move it back
-                    if (boxes.get(rnum).checkCollision(boxes) || boxes.get(rnum).x + boxes.get(rnum).width > width || previousHeight < getHighest(boxes)) {
-                        boxes.remove(rnum);
-                        boxes.add(rnum, oldBox);
-                    }
+                //If this causes an invalidation or height increase, move it back
+                if (boxes.get(c-1).checkCollision(boxes) | boxes.get(c-1).x + boxes.get(c-1).width > width | getHighest(boxes) > previousHeight) {
+                    boxes.remove(c-1);
+                    boxes.add(c-1, oldBox);
                 }
+                c--;
             }
+
         }
 
         shuffleBottomUp(boxes);
         shuffleDown(boxes);
-        //drawBoxes(boxes, "Filled");
 
         rightDownLeft(boxes);
 
@@ -628,27 +569,40 @@ public class VNS{
     public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
     {
         ArrayList<Box> currentSolution = new ArrayList<Box>();
-        ArrayList<Box> shakeBoxes = new ArrayList<Box>();
-        for(Box b:boxes)
+        ArrayList<Box> globalOptimum = boxes;
         {
-            Box newbox = new Box(b.getWidth(), b.getHeight());
-            newbox.setX(b.getX());
-            newbox.setY(b.getY());
-            shakeBoxes.add(newbox);
-        }
-        ArrayList<Box> globalOptimum = shakeBoxes;
-        {
-            for(int i = 0; i< 5000; i++)
+            for(int i = 0; i< 1000; i++)
             {
+//                currentSolution = shift(boxes);
+//                if(accepted(currentSolution, boxes))
+//                {
+//                    boxes = currentSolution;
+//                }
+//                if(getHighest(currentSolution) < getHighest(globalOptimum))
+//                {
+//                    globalOptimum = currentSolution;
+//                }
+
                 currentSolution = findGaps(boxes);
                 if(accepted(currentSolution, boxes))
                 {
                     boxes = currentSolution;
                 }
-                if(getHighest(currentSolution) < getHighest(globalOptimum)) {
+                if(getHighest(currentSolution) < getHighest(globalOptimum))
+                {
                     globalOptimum = currentSolution;
-                    System.out.println("New Best: " + getHighest(globalOptimum));
                 }
+
+//                currentSolution = rightDownLeft(boxes);
+//                if(accepted(currentSolution, boxes))
+//                {
+//                    boxes = currentSolution;
+//                }
+//                if(getHighest(currentSolution) < getHighest(globalOptimum))
+//                {
+//                    globalOptimum = currentSolution;
+//                }
+
             }
             return globalOptimum;
         }
@@ -663,11 +617,10 @@ public class VNS{
         return false;
     }
 
-	// Shuffles the top box to the right, down as far as possible and then left as far as possible
-	public static ArrayList<Box> rightDownLeft(ArrayList<Box> boxes){
+    // Shuffles the top box to the right, down as far as possible and then left as far as possible
+    public static ArrayList<Box> rightDownLeft(ArrayList<Box> boxes){
         int preHeight = getHighest(boxes) / scale;
         //System.out.println("RDL Pre height: " + preHeight);
-        System.out.println("Right Down Left");
 
         //get the top box
         Box top = getHighestBox(boxes);
@@ -701,21 +654,21 @@ public class VNS{
         //drawBoxes(boxes, "RDL");
 
         return boxes;
-	}
+    }
 
-	
-	public static int getHighest(ArrayList<Box> boxes)
-	{
-		int currentHighest = 0;
-		for(Box b:boxes)
-		{
-			if(b.getY() + b.getHeight() > currentHighest)
-			{
-				currentHighest = b.getY() + b.getHeight();
-			}
-		}
-		return currentHighest;
-	}
+
+    public static int getHighest(ArrayList<Box> boxes)
+    {
+        int currentHighest = 0;
+        for(Box b:boxes)
+        {
+            if(b.getY() + b.getHeight() > currentHighest)
+            {
+                currentHighest = b.getY() + b.getHeight();
+            }
+        }
+        return currentHighest;
+    }
 
     public static Box getHighestBox(ArrayList<Box> boxes)
     {
@@ -734,11 +687,11 @@ public class VNS{
 
     public static class BoxDrawer extends JPanel{
 
-	ArrayList<Box> boxes;
-	public void setArray(ArrayList<Box> boxesCopy)
-	{
-		boxes = boxesCopy;
-	}
+        ArrayList<Box> boxes;
+        public void setArray(ArrayList<Box> boxesCopy)
+        {
+            boxes = boxesCopy;
+        }
 
 //        @Override
 //        public Dimension getPrefferedSize(){
@@ -748,11 +701,6 @@ public class VNS{
         public void paintComponent(Graphics g){
             super.paintComponent(g);
             this.setBackground(Color.LIGHT_GRAY);
-
-            g.setColor(Color.RED);
-            g.fillRect(width, 0, 1, getHighest(boxes));
-            g.fillRect(0, getHighest(boxes), width, 1);
-
 
             for(int i =0; i< boxes.size(); i++)
             {
