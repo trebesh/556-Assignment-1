@@ -1,4 +1,8 @@
-package com.company;
+/*
+  Box class
+
+  ConnorFergusson_1299038_HannahTrebes_1306378
+*/
 
 import java.util.ArrayList;
 
@@ -50,7 +54,7 @@ public class Box {
     // Returns: TRUE if a collision occurs, otherwise FALSE
     // Checks this box against a list of boxes to see if their x/y/width/height are colliding
     public boolean checkCollision(ArrayList<Box> boxes){
-        for (Box b: boxes) 
+        for (Box b: boxes)
         {
             if(b != this)
             {
@@ -58,13 +62,13 @@ public class Box {
                 {
                     if((this.x + this.width) > b.x)
                     {
-                            if(this.y < (b.y + b.height))
+                        if(this.y < (b.y + b.height))
+                        {
+                            if((this.y + this.height) > b.y)
                             {
-                                if((this.y + this.height) > b.y)
-                                {
-                                    return true;
-                                }
+                                return true;
                             }
+                        }
                     }
                 }
             }
@@ -101,50 +105,59 @@ public class Box {
         // This return should never be reached
         return null;
     }
-
+//a method to minimise the height of the box
     public void minimizeHeight(){
         if (width >= height){ return; }
         rotate();
         return;
     }
-
+//a method that returns the area of the box
     public int getArea(){
         area = width * height;
         return area;
     }
-
+//a public method to return the width and height in string format
     public String toString(){
         return width + " " + height;
     }
-
+//a method that gets the y value
     public int getY()
     {
         return y;
     }
-
+//a method that sets the y value
     public void setY(int tempY)
     {
         y = tempY;
-	}
-
-	public int getX()
+    }
+//a method that gets the x value
+    public int getX()
     {
         return x;
     }
-
+//a method that sets the x value
     public void setX(int tempX)
     {
         x = tempX;
-	}
-
+    }
+//a method that gets the width
     public int getWidth()
     {
         return width;
     }
-
+//a method that sets the width
+    public void setWidth(int tempWidth)
+    {
+        width = tempWidth;
+    }
+//a method that gets the height
     public int getHeight()
     {
         return height;
     }
-
+//a method that sets the height
+    public void setHeight(int tempHeight)
+    {
+        height = tempHeight;
+    }
 }
