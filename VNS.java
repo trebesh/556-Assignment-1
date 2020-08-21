@@ -3,9 +3,7 @@ package com.company;
   Main Class to Implement Variable Neighbourhood Search
 
   ConnorFergusson_1299038_HannahTrebes_1306378
-  neighbourhood function idea:
-    take tallest box on second/next row, move down as best improvement
-    swap tallest box with shorter box/es of same width
+
 */
 
 import javax.swing.*;
@@ -17,11 +15,11 @@ import java.util.*;
 public class VNS{
 
     //List of the items
-    public static final int scale = 5;
+    public static int scale;
     //Buffered Reader - read line by line
-    public static final int width = 40 * scale;
+    public static int width;
     public static final int kmax = 3;
-    public static final int tmax = 10;
+    public static int tmax;
     public static void main(String [] args)
     {
         ArrayList<Box> boxes = new ArrayList<>();
@@ -37,7 +35,9 @@ public class VNS{
         }
 
         String filePath = args[0];
-
+        scale = Integer.parseInt(args[1]);
+        width = Integer.parseInt(args[2]) * scale;
+        tmax = Integer.parseInt(args[3]);
         getData(filePath, boxes);
 
         newSolution(boxes);
@@ -69,15 +69,11 @@ public class VNS{
         f.setVisible(true);
 
         display.setArray(boxes);
-//        JScrollPane scrollPane = new JScrollPane(display, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//        JScrollBar bar = scrollPane.getVerticalScrollBar();
-//        f.add(scrollPane, BorderLayout.RIGHT);
-//        f.add(bar);
+
         f.pack();
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.add(display);
         f.setSize(width, getHighest(boxes) + 50);
-        //bar.setPreferredSize(new Dimension(10, f.getHeight()));
 
         return;
     }
@@ -120,15 +116,10 @@ public class VNS{
                 }
                 counter = 1;
 
-
-                //boxes.add(b);
                 int totalHeight = getHighest(boxes) / scale;
 
             }
-//            //Testing message
-//            for(int i = 0; i < boxes.size(); i++){
-//                System.out.println(boxes.get(i).toString());
-//            }
+
         }catch (IOException e){
             System.out.println("IO ERROR in GETDATA" + e.getMessage());
         }catch (Exception e){
@@ -207,134 +198,7 @@ public class VNS{
         drawBoxes(boxes, "Result");
 
     }
-    //shuffles all the boxes down into free space
-    public static void shuffleDown(ArrayList<Box> boxes)
-    {
-        int numChanges = 1;
-        //while there was still changes
-        while(numChanges > 0)
-        {
-            numChanges = 0;
-            //go through the list of boxes
-            for(Box b: boxes)
-            {
-                Boolean collision = false;
-                //while there isnt a collision
-                while(collision == false)
-                {
-                    //store the old y coordinate
-                    int tempY = b.getY();
-                    if(tempY-1 >= 0)
-                    {
-                        //reduce the y by one, then test if there are collisions
-                        b.setY(tempY - 1);
-                        //if there  are collisions, change the y back
-                        if(b.checkCollision(boxes))
-                        {
-                            b.setY(tempY);
-                            collision = true;
-                        }
-                        else
-                        {
-                            numChanges++;
-                        }
-                    }
-                    else
-                    {
-                        collision = true;
-                    }
 
-                }
-                shuffleLeft(b, boxes);
-            }
-        }
-
-        //drawBoxes(boxes, "S D");
-
-    }
-
-    public static void shuffleLeft(Box b, ArrayList<Box> boxes)
-    {
-        int numChanges = 1;
-        //while there was still changes
-        while(numChanges > 0)
-        {
-            numChanges = 0;
-            Boolean collision = false;
-            //while there isnt a collision
-            while(collision == false)
-            {
-                //store the old x coordinate
-                int tempX = b.getX();
-                if(tempX-1 >= 0)
-                {
-                    //reduce the y by one, then test if there are collisions
-                    b.setX(tempX - 1);
-                    //if there  are collisions, change the y back
-                    if(b.checkCollision(boxes))
-                    {
-                        b.setX(tempX);
-                        collision = true;
-                    }
-                    else
-                    {
-                        numChanges++;
-                    }
-                }
-                else
-                {
-                    collision = true;
-                }
-            }
-        }
-    }
-
-    public static void shuffleRight(Box b, ArrayList<Box> boxes)
-    {
-        int numChanges = 1;
-        //while there was still changes
-        while(numChanges > 0)
-        {
-            numChanges = 0;
-            Boolean collision = false;
-            //while there isnt a collision
-            while(collision == false)
-            {
-                //store the old x coordinate
-                int tempX = b.getX();
-                if(tempX + b.getWidth() + 1 <= width)
-                {
-                    //increase the y by one, then test if there are collisions
-                    b.setX(tempX + 1);
-                    //if there  are collisions, change the y back
-                    if(b.checkCollision(boxes))
-                    {
-                        b.setX(tempX);
-                        collision = true;
-                    }
-                    else
-                    {
-                        numChanges++;
-                    }
-                }
-                else
-                {
-                    collision = true;
-                }
-            }
-        }
-    }
-
-    public static void shuffleBottomUp(ArrayList<Box> boxes){
-        for (Box b : boxes) {
-            int oldY = b.y;
-            b.y = 0;
-            while (b.y < oldY){
-                if (b.checkCollision(boxes) == true){b.y += 1;}
-                else break;
-            }
-        }
-    }
 
     public static ArrayList<Box> BVNS(ArrayList<Box> boxes)
     {
@@ -535,7 +399,6 @@ public class VNS{
             }
 
             int upperRand = fillers.size();
-            //System.out.println("Filler Size " + fillers.size());
             int rnum = 0;
             if(upperRand != 0){
                 int c = 0;
@@ -569,57 +432,136 @@ public class VNS{
         return boxes;
     }
 
+    public static void shuffleBottomUp(ArrayList<Box> boxes){
+        for (Box b : boxes) {
+            int oldY = b.y;
+            b.y = 0;
+            while (b.y < oldY){
+                if (b.checkCollision(boxes) == true){b.y += 1;}
+                else break;
+            }
+        }
+    }
 
-//    public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
-//    {
-//        ArrayList<Box> currentSolution = new ArrayList<Box>();
-//        ArrayList<Box> globalOptimum = boxes;
-//        {
-//            for(int i = 0; i< 1000; i++)
-//            {
-////                currentSolution = shift(boxes);
-////                if(accepted(currentSolution, boxes))
-////                {
-////                    boxes = currentSolution;
-////                }
-////                if(getHighest(currentSolution) < getHighest(globalOptimum))
-////                {
-////                    globalOptimum = currentSolution;
-////                }
-//
-//                currentSolution = findGaps(boxes);
-//                if(accepted(currentSolution, boxes))
-//                {
-//                    boxes = currentSolution;
-//                }
-//                if(getHighest(currentSolution) < getHighest(globalOptimum))
-//                {
-//                    globalOptimum = currentSolution;
-//                }
-//
-////                currentSolution = rightDownLeft(boxes);
-////                if(accepted(currentSolution, boxes))
-////                {
-////                    boxes = currentSolution;
-////                }
-////                if(getHighest(currentSolution) < getHighest(globalOptimum))
-////                {
-////                    globalOptimum = currentSolution;
-////                }
-//
-//            }
-//            return globalOptimum;
-//        }
-//    }
+    //shuffles all the boxes down into free space
+    public static void shuffleDown(ArrayList<Box> boxes)
+    {
+        int numChanges = 1;
+        //while there was still changes
+        while(numChanges > 0)
+        {
+            numChanges = 0;
+            //go through the list of boxes
+            for(Box b: boxes)
+            {
+                Boolean collision = false;
+                //while there isnt a collision
+                while(collision == false)
+                {
+                    //store the old y coordinate
+                    int tempY = b.getY();
+                    if(tempY-1 >= 0)
+                    {
+                        //reduce the y by one, then test if there are collisions
+                        b.setY(tempY - 1);
+                        //if there  are collisions, change the y back
+                        if(b.checkCollision(boxes))
+                        {
+                            b.setY(tempY);
+                            collision = true;
+                        }
+                        else
+                        {
+                            numChanges++;
+                        }
+                    }
+                    else
+                    {
+                        collision = true;
+                    }
 
-//    public static boolean accepted(ArrayList<Box> currentSolution, ArrayList<Box> boxes)
-//    {
-//        if(getHighest(currentSolution) < getHighest(boxes))
-//        {
-//            return true;
-//        }
-//        return false;
-//    }
+                }
+                shuffleLeft(b, boxes);
+            }
+        }
+
+        //drawBoxes(boxes, "S D");
+
+    }
+
+    public static void shuffleLeft(Box b, ArrayList<Box> boxes)
+    {
+        int numChanges = 1;
+        //while there was still changes
+        while(numChanges > 0)
+        {
+            numChanges = 0;
+            Boolean collision = false;
+            //while there isnt a collision
+            while(collision == false)
+            {
+                //store the old x coordinate
+                int tempX = b.getX();
+                if(tempX-1 >= 0)
+                {
+                    //reduce the y by one, then test if there are collisions
+                    b.setX(tempX - 1);
+                    //if there  are collisions, change the y back
+                    if(b.checkCollision(boxes))
+                    {
+                        b.setX(tempX);
+                        collision = true;
+                    }
+                    else
+                    {
+                        numChanges++;
+                    }
+                }
+                else
+                {
+                    collision = true;
+                }
+            }
+        }
+    }
+
+    public static void shuffleRight(Box b, ArrayList<Box> boxes)
+    {
+        int numChanges = 1;
+        //while there was still changes
+        while(numChanges > 0)
+        {
+            numChanges = 0;
+            Boolean collision = false;
+            //while there isnt a collision
+            while(collision == false)
+            {
+                //store the old x coordinate
+                int tempX = b.getX();
+                if(tempX + b.getWidth() + 1 <= width)
+                {
+                    //increase the y by one, then test if there are collisions
+                    b.setX(tempX + 1);
+                    //if there  are collisions, change the y back
+                    if(b.checkCollision(boxes))
+                    {
+                        b.setX(tempX);
+                        collision = true;
+                    }
+                    else
+                    {
+                        numChanges++;
+                    }
+                }
+                else
+                {
+                    collision = true;
+                }
+            }
+        }
+    }
+
+
 
     // Shuffles the top box to the right, down as far as possible and then left as far as possible
     public static ArrayList<Box> rightDownLeft(ArrayList<Box> boxes){
@@ -649,13 +591,7 @@ public class VNS{
         shuffleBottomUp(boxes);
         shuffleDown(boxes);
 
-        //System.out.println("RDL Post height: " + (getHighest(boxes) / scale));
-        //System.out.println("New highest Box: " + boxes.indexOf(getHighestBox(boxes)));
-
-        //if (preHeight > (getHighest(boxes) / scale)){ rightDownLeft(boxes);}
         if (top != getHighestBox(boxes)){rightDownLeft(boxes);}
-
-        //drawBoxes(boxes, "RDL");
 
         return boxes;
     }
@@ -697,10 +633,6 @@ public class VNS{
             boxes = boxesCopy;
         }
 
-//        @Override
-//        public Dimension getPrefferedSize(){
-//            return new Dimension(width - 10, getHighest() + 50);
-//        }
 
         public void paintComponent(Graphics g){
             super.paintComponent(g);
