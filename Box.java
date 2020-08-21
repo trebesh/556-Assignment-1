@@ -1,3 +1,5 @@
+package com.company;
+
 import java.util.ArrayList;
 
 public class Box {
@@ -120,7 +122,7 @@ public class Box {
         return y;
     }
 
-    public void setY(int tempY) 
+    public void setY(int tempY)
     {
         y = tempY;
 	}
@@ -130,7 +132,7 @@ public class Box {
         return x;
     }
 
-    public void setX(int tempX) 
+    public void setX(int tempX)
     {
         x = tempX;
 	}
@@ -140,18 +142,9 @@ public class Box {
         return width;
     }
 
-    public void setWidth(int tempWidth) 
-    {
-        width = tempWidth;
-	}
-
     public int getHeight()
     {
         return height;
     }
 
-    public void setHeight(int tempHeight) 
-    {
-        height = tempHeight;
-	}
 }

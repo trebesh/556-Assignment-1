@@ -1,3 +1,4 @@
+package com.company;
 /*
   Main Class to Implement Variable Neighbourhood Search
 
@@ -18,9 +19,9 @@ public class VNS{
     //List of the items
     public static final int scale = 5;
     //Buffered Reader - read line by line
-    public static final int width = 100 * scale;
+    public static final int width = 40 * scale;
     public static final int kmax = 3;
-    public static final int tmax = 100;
+    public static final int tmax = 10;
     public static void main(String [] args)
     {
         ArrayList<Box> boxes = new ArrayList<>();
@@ -138,7 +139,6 @@ public class VNS{
 
     public static void newSolution(ArrayList<Box> boxes)
     {
-
         int totalWidth = 0;
         int totalHeight = 0;
         int nextWidth = 0;
@@ -387,7 +387,6 @@ public class VNS{
         }
         else if(k==2)
         {
-            Random random2 = new Random();
             int rand1 = random1.nextInt(shakeBoxes.size() - 1);
             Box moveBox = shakeBoxes.get(rand1);
             moveBox.rotate();
@@ -398,8 +397,8 @@ public class VNS{
             int rand1 = random1.nextInt(shakeBoxes.size() - 1);
             Box rotateBox = shakeBoxes.get(rand1);
             rotateBox.rotate();
-
         }
+
         newSolution(shakeBoxes);
         return shakeBoxes;
     }
@@ -535,25 +534,29 @@ public class VNS{
                 }
             }
 
-            int c = fillers.size();
-            while (c > 0) {
-                //Move the box
-                Box oldBox = new Box(boxes.get(c-1).width, boxes.get(c-1).height);
-                oldBox.x = boxes.get(c-1).x;
-                oldBox.y = boxes.get(c-1).y;
-                boxes.remove(c-1);
-                boxes.add(c-1, boxesCopy.get(c-1));
-                int oldX = boxes.get(c-1).x;
-                int oldY = boxes.get(c-1).y;
-                boxes.get(c-1).x = g.x;
-                boxes.get(c-1).y = g.y;
+            int upperRand = fillers.size();
+            //System.out.println("Filler Size " + fillers.size());
+            int rnum = 0;
+            if(upperRand != 0){
+                int c = 0;
+                while (c <= upperRand * 2) {
+                    c++;
+                    rnum = rand.nextInt(fillers.size());
+                    //Move the box
+                    Box oldBox = new Box(boxes.get(rnum).width, boxes.get(rnum).height);
+                    oldBox.x = boxes.get(rnum).x;
+                    oldBox.y = boxes.get(rnum).y;
+                    boxes.remove(rnum);
+                    boxes.add(rnum, boxesCopy.get(rnum));
+                    boxes.get(rnum).x = g.x;
+                    boxes.get(rnum).y = g.y;
 
-                //If this causes an invalidation or height increase, move it back
-                if (boxes.get(c-1).checkCollision(boxes) | boxes.get(c-1).x + boxes.get(c-1).width > width | getHighest(boxes) > previousHeight) {
-                    boxes.remove(c-1);
-                    boxes.add(c-1, oldBox);
+                    //If this causes an invalidation, move it back
+                    if (boxes.get(rnum).checkCollision(boxes) || boxes.get(rnum).x + boxes.get(rnum).width > width /scale || previousHeight < getHighest(boxes)) {
+                        boxes.remove(rnum);
+                        boxes.add(rnum, oldBox);
+                    }
                 }
-                c--;
             }
 
         }
@@ -566,14 +569,25 @@ public class VNS{
         return boxes;
     }
 
-    public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
-    {
-        ArrayList<Box> currentSolution = new ArrayList<Box>();
-        ArrayList<Box> globalOptimum = boxes;
-        {
-            for(int i = 0; i< 1000; i++)
-            {
-//                currentSolution = shift(boxes);
+
+//    public static ArrayList<Box> LargeSearch(ArrayList<Box> boxes)
+//    {
+//        ArrayList<Box> currentSolution = new ArrayList<Box>();
+//        ArrayList<Box> globalOptimum = boxes;
+//        {
+//            for(int i = 0; i< 1000; i++)
+//            {
+////                currentSolution = shift(boxes);
+////                if(accepted(currentSolution, boxes))
+////                {
+////                    boxes = currentSolution;
+////                }
+////                if(getHighest(currentSolution) < getHighest(globalOptimum))
+////                {
+////                    globalOptimum = currentSolution;
+////                }
+//
+//                currentSolution = findGaps(boxes);
 //                if(accepted(currentSolution, boxes))
 //                {
 //                    boxes = currentSolution;
@@ -582,40 +596,30 @@ public class VNS{
 //                {
 //                    globalOptimum = currentSolution;
 //                }
+//
+////                currentSolution = rightDownLeft(boxes);
+////                if(accepted(currentSolution, boxes))
+////                {
+////                    boxes = currentSolution;
+////                }
+////                if(getHighest(currentSolution) < getHighest(globalOptimum))
+////                {
+////                    globalOptimum = currentSolution;
+////                }
+//
+//            }
+//            return globalOptimum;
+//        }
+//    }
 
-                currentSolution = findGaps(boxes);
-                if(accepted(currentSolution, boxes))
-                {
-                    boxes = currentSolution;
-                }
-                if(getHighest(currentSolution) < getHighest(globalOptimum))
-                {
-                    globalOptimum = currentSolution;
-                }
-
-//                currentSolution = rightDownLeft(boxes);
-//                if(accepted(currentSolution, boxes))
-//                {
-//                    boxes = currentSolution;
-//                }
-//                if(getHighest(currentSolution) < getHighest(globalOptimum))
-//                {
-//                    globalOptimum = currentSolution;
-//                }
-
-            }
-            return globalOptimum;
-        }
-    }
-
-    public static boolean accepted(ArrayList<Box> currentSolution, ArrayList<Box> boxes)
-    {
-        if(getHighest(currentSolution) < getHighest(boxes))
-        {
-            return true;
-        }
-        return false;
-    }
+//    public static boolean accepted(ArrayList<Box> currentSolution, ArrayList<Box> boxes)
+//    {
+//        if(getHighest(currentSolution) < getHighest(boxes))
+//        {
+//            return true;
+//        }
+//        return false;
+//    }
 
     // Shuffles the top box to the right, down as far as possible and then left as far as possible
     public static ArrayList<Box> rightDownLeft(ArrayList<Box> boxes){
@@ -701,6 +705,10 @@ public class VNS{
         public void paintComponent(Graphics g){
             super.paintComponent(g);
             this.setBackground(Color.LIGHT_GRAY);
+
+            g.setColor(Color.RED);
+            g.fillRect(width, 0, 1, getHighest(boxes));
+            g.fillRect(0, getHighest(boxes), width, 1);
 
             for(int i =0; i< boxes.size(); i++)
             {
