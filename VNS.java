@@ -1,4 +1,4 @@
-package com.company;
+
 /*
   Main Class to Implement Variable Neighbourhood Search
 
